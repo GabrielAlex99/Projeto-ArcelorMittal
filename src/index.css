@@ -1,0 +1,243 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@350;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-natural-bg: #f5f7f6;
+  --color-natural-green-dark: #1b4332;
+  --color-natural-petrol-blue: #0b3d59;
+  --color-natural-accent: #f28f3b;
+  --color-natural-gray-light: #e9ecef;
+  --color-natural-text-main: #2d3436;
+}
+
+:root {
+  --bg: #f5f7f6;
+  --green-dark: #1b4332;
+  --petrol-blue: #0b3d59;
+  --accent: #f28f3b;
+  --gray-light: #e9ecef;
+  --text-main: #2d3436;
+}
+
+/* Dark Mode CSS Variables */
+html.dark, :root.dark, .dark-mode-root {
+  --bg: #080d0a;
+  --green-dark: #34d399;
+  --petrol-blue: #38bdf8;
+  --accent: #f28f3b;
+  --gray-light: #1b2a21;
+  --text-main: #f1f5f9;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--text-main);
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* General Dark Mode Styling rules with high specificity */
+html.dark body, .dark-mode-root body, .dark-mode-root {
+  background-color: #080d0a !important;
+  color: #f1f5f9 !important;
+}
+
+/* Force section and layout backgrounds */
+.dark-mode-root section, 
+.dark-mode-root main,
+.dark-mode-root #root-viewport,
+.dark-mode-root #mapa,
+.dark-mode-root #relatar,
+.dark-mode-root #propor,
+.dark-mode-root #dashboard,
+.dark-mode-root #banco,
+.dark-mode-root #restrito,
+.dark-mode-root #sobre {
+  background-color: #080d0a !important;
+  background-image: none !important;
+  color: #f1f5f9 !important;
+}
+
+/* Modal and card boxes in dark mode */
+.dark-mode-root .bg-white,
+.dark-mode-root .bg-slate-50,
+.dark-mode-root .bg-gray-50,
+.dark-mode-root .bg-\[\#f5f7f6\],
+.dark-mode-root .bg-\[\#f5f7f6\]\/90,
+.dark-mode-root .bg-\[\#f5f7f6\]\/95,
+.dark-mode-root .bg-\[\#eef2f0\],
+.dark-mode-root .bg-emerald-50\/40,
+.dark-mode-root .bg-emerald-50\/20,
+.dark-mode-root .bg-[#f5f7f6] {
+  background-color: #0e1712 !important;
+  background-image: none !important;
+  color: #f1f5f9 !important;
+}
+
+/* Text color fixes for dark mode */
+.dark-mode-root .text-gray-950,
+.dark-mode-root .text-gray-900,
+.dark-mode-root .text-slate-900,
+.dark-mode-root .text-gray-800,
+.dark-mode-root .text-slate-800,
+.dark-mode-root .text-gray-700,
+.dark-mode-root .text-slate-700,
+.dark-mode-root .text-slate-650,
+.dark-mode-root .text-gray-650,
+.dark-mode-root .text-\[\#1a3a2a\],
+.dark-mode-root .text-\[\#1b4332\],
+.dark-mode-root .text-\[\#0b3d59\],
+.dark-mode-root .text-\[\#2d3436\],
+.dark-mode-root .text-\[\#444\],
+.dark-mode-root .text-\[\#555\] {
+  color: #f1f5f9 !important;
+}
+
+.dark-mode-root .text-gray-600,
+.dark-mode-root .text-slate-600,
+.dark-mode-root .text-gray-500,
+.dark-mode-root .text-slate-500 {
+  color: #cbd5e1 !important;
+}
+
+.dark-mode-root .text-gray-400,
+.dark-mode-root .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+/* Borders in dark mode */
+.dark-mode-root .border-gray-100,
+.dark-mode-root .border-gray-150,
+.dark-mode-root .border-gray-200,
+.dark-mode-root .border-gray-300,
+.dark-mode-root .border-slate-200,
+.dark-mode-root .border-emerald-100,
+.dark-mode-root .border-emerald-80,
+.dark-mode-root .border-\[\#e9ecef\] {
+  border-color: #1b2a21 !important;
+}
+
+/* Headings in dark mode */
+.dark-mode-root h1,
+.dark-mode-root h2,
+.dark-mode-root h3,
+.dark-mode-root h4,
+.dark-mode-root h5,
+.dark-mode-root h6 {
+  color: #ffffff !important;
+}
+
+/* Form Input dark mode styling */
+.dark-mode-root input,
+.dark-mode-root select,
+.dark-mode-root textarea {
+  background-color: #111a14 !important;
+  color: #f1f5f9 !important;
+  border-color: #1b2a21 !important;
+}
+
+.dark-mode-root input::placeholder,
+.dark-mode-root textarea::placeholder {
+  color: rgba(241, 245, 249, 0.4) !important;
+}
+
+/* Semi-transparent accents */
+.dark-mode-root .bg-emerald-50,
+.dark-mode-root .bg-teal-50,
+.dark-mode-root .bg-emerald-100\/20,
+.dark-mode-root .bg-emerald-50\/10 {
+  background-color: rgba(52, 211, 153, 0.1) !important;
+  color: #34d399 !important;
+}
+
+.dark-mode-root .bg-blue-50,
+.dark-mode-root .bg-blue-100\/20 {
+  background-color: rgba(56, 189, 248, 0.1) !important;
+  color: #38bdf8 !important;
+}
+
+.dark-mode-root .bg-rose-50,
+.dark-mode-root .bg-red-50 {
+  background-color: rgba(244, 63, 94, 0.1) !important;
+  color: #fb7185 !important;
+}
+
+.dark-mode-root .bg-amber-50,
+.dark-mode-root .bg-orange-50 {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  color: #fbbf24 !important;
+}
+
+.dark-mode-root .bg-\[\#1b4332\]\/5,
+.dark-mode-root .bg-\[\#1b4332\]\/10 {
+  background-color: rgba(52, 211, 153, 0.08) !important;
+}
+
+.dark-mode-root .bg-\[\#0b3d59\]\/5,
+.dark-mode-root .bg-\[\#0b3d59\]\/10 {
+  background-color: rgba(58, 191, 248, 0.08) !important;
+}
+
+.dark-mode-root .shadow-lg,
+.dark-mode-root .shadow-md,
+.dark-mode-root .shadow-xl,
+.dark-mode-root .shadow-xs,
+.dark-mode-root .shadow-2xl {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Custom scrollbars for dashboard widgets */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--gray-light);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--green-dark);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--petrol-blue);
+}
+
+/* Modal and feedback fade animations */
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

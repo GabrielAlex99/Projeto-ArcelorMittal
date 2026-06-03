@@ -1,0 +1,228 @@
+import React, { useState } from 'react';
+import { X, Mail, Lock, User as UserIcon, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { PlataformaUser } from '../types';
+
+interface AuthModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onLoginSuccess: (user: PlataformaUser) => void;
+}
+
+export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
+  const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Signup
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!email.trim() || !password.trim()) {
+      setError('Por favor, preencha todos os campos obrigatórios.');
+      return;
+    }
+
+    if (!isLogin && !name.trim()) {
+      setError('Por favor, preencha o seu nome completo.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+
+    // Get existing users list
+    const storedUsers = localStorage.getItem('esg_plataforma_users');
+    const users: any[] = storedUsers ? JSON.parse(storedUsers) : [];
+
+    if (isLogin) {
+      // Find user
+      const foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (!foundUser) {
+        setError('Usuário não localizado. Verifique o e-mail ou crie uma conta.');
+        return;
+      }
+      if (foundUser.password !== password) {
+        setError('Senha incorreta. Tente novamente.');
+        return;
+      }
+
+      // Login Successful
+      const userObj: PlataformaUser = {
+        id: foundUser.id,
+        name: foundUser.name,
+        email: foundUser.email
+      };
+      onLoginSuccess(userObj);
+      onClose();
+    } else {
+      // Signup
+      const emailExists = users.some(u => u.email.toLowerCase() === email.toLowerCase());
+      if (emailExists) {
+        setError('Este e-mail já está sendo utilizado por outra conta.');
+        return;
+      }
+
+      const newUser = {
+        id: String(Date.now()),
+        name,
+        email: email.toLowerCase(),
+        password
+      };
+
+      // Store in array
+      users.push(newUser);
+      localStorage.setItem('esg_plataforma_users', JSON.stringify(users));
+
+      // Automatic login after sign up
+      const userObj: PlataformaUser = {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email
+      };
+      onLoginSuccess(userObj);
+      onClose();
+    }
+  };
+
+  const handleToggleMode = () => {
+    setIsLogin(!isLogin);
+    setName('');
+    setEmail('');
+    setPassword('');
+    setError('');
+  };
+
+  return (
+    <div className="fixed inset-0 z-55 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-white border border-[#e9ecef] rounded-3.5xl max-w-md w-full p-6 md:p-8 shadow-2xl relative text-left animate-scale-up">
+        
+        {/* Close Button */}
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 rounded-xl bg-[#f5f7f6] text-gray-400 hover:text-gray-750 border border-[#e9ecef] transition-all"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        <div className="space-y-6">
+          
+          {/* Header Title */}
+          <div className="text-center">
+            <span className="text-xs font-bold text-[#f28f3b] tracking-wider uppercase block mb-1">
+              Plataforma ESG
+            </span>
+            <h3 className="font-sans font-bold text-2xl text-[#1b4332] tracking-tight">
+              {isLogin ? 'Entrar na Plataforma' : 'Criar Conta de Acesso'}
+            </h3>
+            <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">
+              {isLogin 
+                ? 'Monitore e gerencie seus relatos e propostas socioambientais enviadas.' 
+                : 'Cadastre-se para gerenciar seus relatos territoriais e propostas.'}
+            </p>
+          </div>
+
+          {error && (
+            <div className="bg-rose-50 border border-rose-220 p-3 rounded-xl text-xs text-rose-700 flex items-center space-x-2 animate-pulse">
+              <AlertCircle className="h-4 w-4 text-rose-500 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {/* Name Input (Signup only) */}
+            {!isLogin && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-gray-500 uppercase block">Qual o seu nome?</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Seu nome completo"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#e9ecef] text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors shadow-xs"
+                  />
+                  <UserIcon className="absolute left-3.5 top-3.5 h-4 w-4 text-[#1b4332]" />
+                </div>
+              </div>
+            )}
+
+            {/* Email Input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-500 uppercase block">E-mail corporativo / pessoal</label>
+              <div className="relative">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="exemplo@email.com"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#e9ecef] text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors shadow-xs"
+                />
+                <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-[#1b4332]" />
+              </div>
+            </div>
+
+            {/* Password Input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-500 uppercase block">Senha de acesso</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white border border-[#e9ecef] text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors shadow-xs"
+                />
+                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-[#1b4332]" />
+                
+                {/* Visual Eye toggles */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-3 text-gray-405 hover:text-gray-700 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="w-full py-3 bg-[#0b3d59] hover:bg-[#072a42] text-white font-bold rounded-xl text-sm transition-all shadow-md mt-6"
+            >
+              {isLogin ? 'Efetuar Login' : 'Finalizar Cadastro'}
+            </button>
+
+          </form>
+
+          {/* Toggle between login / registration */}
+          <div className="pt-4 border-t border-[#e9ecef] text-center">
+            <p className="text-xs text-gray-505">
+              {isLogin ? 'Não possui uma conta corporativa?' : 'Já possui uma conta ativa?'}
+              <button 
+                onClick={handleToggleMode}
+                className="ml-1 text-[#f28f3b] hover:text-[#de7c2a] font-bold underline focus:outline-none"
+              >
+                {isLogin ? 'Cadastre-se agora mesmo' : 'Acesse o Painel'}
+              </button>
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  );
+}
