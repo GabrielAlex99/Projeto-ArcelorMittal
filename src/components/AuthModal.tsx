@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User as UserIcon, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { X, Mail, Lock, User as UserIcon, AlertCircle, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { PlataformaUser } from '../types';
 
 interface AuthModalProps {
@@ -10,6 +10,8 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Signup
+  const [isForgotMode, setIsForgotMode] = useState(false);
+  const [recoverySuccess, setRecoverySuccess] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,6 +20,25 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
+
+  const handleForgotSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!email.trim()) {
+      setError('Por favor, insira o seu e-mail cadastrado.');
+      return;
+    }
+
+    // Simulate real database verification
+    const storedUsers = localStorage.getItem('esg_plataforma_users');
+    const users: any[] = storedUsers ? JSON.parse(storedUsers) : [];
+    const userExists = users.some(u => u.email.toLowerCase() === email.toLowerCase());
+
+    console.log(`Password reset requested for: ${email}`);
+    // Simulate API flow
+    setRecoverySuccess(true);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,6 +120,8 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
 
   const handleToggleMode = () => {
     setIsLogin(!isLogin);
+    setIsForgotMode(false);
+    setRecoverySuccess(false);
     setName('');
     setEmail('');
     setPassword('');
@@ -108,12 +131,13 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
 
   return (
     <div className="fixed inset-0 z-55 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white border border-[#e9ecef] rounded-3.5xl max-w-md w-full p-6 md:p-8 shadow-2xl relative text-left animate-scale-up">
+      <div className="bg-white border border-[#e9ecef] rounded-3.5xl max-w-md w-full max-h-[85vh] md:max-h-[90vh] overflow-y-auto custom-scrollbar p-6 md:p-8 shadow-2xl relative text-left animate-scale-up">
         
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-xl bg-[#f5f7f6] text-gray-400 hover:text-gray-750 border border-[#e9ecef] transition-all"
+          className="absolute top-4 right-4 p-2 rounded-xl bg-[#f5f7f6] text-gray-400 hover:text-gray-750 border border-[#e9ecef] transition-all cursor-pointer"
+          title="Fechar"
         >
           <X className="h-5 w-5" />
         </button>
@@ -126,12 +150,16 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
               Plataforma ESG
             </span>
             <h3 className="font-sans font-bold text-2xl text-[#1b4332] tracking-tight">
-              {isLogin ? 'Entrar na Plataforma' : 'Criar Conta de Acesso'}
+              {isForgotMode 
+                ? 'Recuperar Senha' 
+                : (isLogin ? 'Entrar na Plataforma' : 'Criar Conta de Acesso')}
             </h3>
             <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">
-              {isLogin 
-                ? 'Monitore e gerencie seus relatos e propostas socioambientais enviadas.' 
-                : 'Cadastre-se para gerenciar seus relatos territoriais e propostas.'}
+              {isForgotMode
+                ? 'Informe o e-mail cadastrado para redefinir as credenciais de acesso de forma segura.'
+                : (isLogin 
+                  ? 'Monitore e gerencie seus relatos e propostas socioambientais enviadas.' 
+                  : 'Cadastre-se para gerenciar seus relatos territoriais e propostas.')}
             </p>
           </div>
 
@@ -143,92 +171,172 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            
-            {/* Name Input (Signup only) */}
-            {!isLogin && (
+          {isForgotMode ? (
+            <form onSubmit={handleForgotSubmit} className="space-y-4">
+              {recoverySuccess ? (
+                <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl text-xs text-emerald-800 text-center space-y-3 animate-scale-up">
+                  <CheckCircle className="h-10 w-10 text-emerald-600 mx-auto" />
+                  <p className="font-bold text-sm">Link de Redefinição Enviado!</p>
+                  <p className="leading-relaxed text-emerald-700">
+                    Instruções detalhadas e um link seguro foram gerados e enviados para o e-mail: <br/>
+                    <strong className="font-bold text-emerald-950 font-mono select-all">{email}</strong>.
+                  </p>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsForgotMode(false);
+                        setRecoverySuccess(false);
+                        setEmail('');
+                        setError('');
+                      }}
+                      className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs cursor-pointer shadow-xs transition-colors"
+                    >
+                      Voltar ao Login
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-500 uppercase block">E-mail Cadastrado</label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="exemplo@email.com"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#e9ecef] text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors shadow-xs"
+                      />
+                      <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-[#1b4332]" />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-[#0b3d59] hover:bg-[#072a42] text-white font-bold rounded-xl text-sm transition-all shadow-md cursor-pointer"
+                  >
+                    Enviar Link de Recuperação
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgotMode(false);
+                      setRecoverySuccess(false);
+                      setError('');
+                    }}
+                    className="w-full text-center text-xs text-gray-500 hover:text-gray-850 font-bold underline cursor-pointer mt-2"
+                  >
+                    Voltar para o Login
+                  </button>
+                </div>
+              )}
+            </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              
+              {/* Name Input (Signup only) */}
+              {!isLogin && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-gray-500 uppercase block">Qual o seu nome?</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Seu nome completo"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#e9ecef] text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors shadow-xs"
+                    />
+                    <UserIcon className="absolute left-3.5 top-3.5 h-4 w-4 text-[#1b4332]" />
+                  </div>
+                </div>
+              )}
+
+              {/* Email Input */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-gray-500 uppercase block">Qual o seu nome?</label>
+                <label className="text-xs font-semibold text-gray-500 uppercase block">E-mail corporativo / pessoal</label>
                 <div className="relative">
                   <input
-                    type="text"
+                    type="email"
                     required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Seu nome completo"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="exemplo@email.com"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#e9ecef] text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors shadow-xs"
                   />
-                  <UserIcon className="absolute left-3.5 top-3.5 h-4 w-4 text-[#1b4332]" />
+                  <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-[#1b4332]" />
                 </div>
               </div>
-            )}
 
-            {/* Email Input */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-500 uppercase block">E-mail corporativo / pessoal</label>
-              <div className="relative">
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="exemplo@email.com"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#e9ecef] text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors shadow-xs"
-                />
-                <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-[#1b4332]" />
+              {/* Password Input */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-semibold text-gray-500 uppercase block">Senha de acesso</label>
+                  {isLogin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsForgotMode(true);
+                        setRecoverySuccess(false);
+                        setError('');
+                      }}
+                      className="text-xs font-bold text-[#f28f3b] hover:text-[#de7c2a] cursor-pointer transition-colors"
+                    >
+                      Esqueci a senha?
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Mínimo 6 caracteres"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white border border-[#e9ecef] text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors shadow-xs"
+                  />
+                  <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-[#1b4332]" />
+                  
+                  {/* Visual Eye toggles */}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-3 text-gray-405 hover:text-gray-700 transition-colors cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Password Input */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-500 uppercase block">Senha de acesso</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white border border-[#e9ecef] text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors shadow-xs"
-                />
-                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-[#1b4332]" />
-                
-                {/* Visual Eye toggles */}
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-3 text-gray-405 hover:text-gray-700 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
+              {/* LGPD Checkbox for signup form */}
+              {!isLogin && (
+                <div className="flex items-start space-x-2.5 text-xs text-gray-650 bg-[#1b4332]/5 p-3.5 rounded-xl border border-[#1b4332]/10 mt-4 shadow-2xs">
+                  <input
+                    id="lgpd-signup"
+                    type="checkbox"
+                    checked={lgpdConsent}
+                    onChange={(e) => setLgpdConsent(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#1b4332] focus:ring-[#1b4332] shrink-0 cursor-pointer"
+                  />
+                  <label htmlFor="lgpd-signup" className="leading-relaxed select-none cursor-pointer text-gray-700 font-normal">
+                    Aceito os termos de consentimento da <strong className="text-[#1b4332] font-bold">LGPD</strong>. Autorizo o armazenamento criptografado do meu nome e e-mail de forma protegida para login, autenticação e correspondência às queixas de sustentabilidade enviadas.
+                  </label>
+                </div>
+              )}
 
-            {/* LGPD Checkbox for signup form */}
-            {!isLogin && (
-              <div className="flex items-start space-x-2.5 text-xs text-gray-650 bg-[#1b4332]/5 p-3.5 rounded-xl border border-[#1b4332]/10 mt-4 shadow-2xs">
-                <input
-                  id="lgpd-signup"
-                  type="checkbox"
-                  checked={lgpdConsent}
-                  onChange={(e) => setLgpdConsent(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#1b4332] focus:ring-[#1b4332] shrink-0"
-                />
-                <label htmlFor="lgpd-signup" className="leading-relaxed select-none cursor-pointer text-gray-700 font-normal">
-                  Aceito os termos de consentimento da <strong className="text-[#1b4332] font-bold">LGPD</strong>. Autorizo o armazenamento criptografado do meu nome e e-mail de forma protegida para login, autenticação e correspondência às queixas de sustentabilidade enviadas.
-                </label>
-              </div>
-            )}
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="w-full py-3 bg-[#0b3d59] hover:bg-[#072a42] text-white font-bold rounded-xl text-sm transition-all shadow-md mt-6 cursor-pointer"
+              >
+                {isLogin ? 'Efetuar Login' : 'Finalizar Cadastro'}
+              </button>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full py-3 bg-[#0b3d59] hover:bg-[#072a42] text-white font-bold rounded-xl text-sm transition-all shadow-md mt-6"
-            >
-              {isLogin ? 'Efetuar Login' : 'Finalizar Cadastro'}
-            </button>
-
-          </form>
+            </form>
+          )}
 
           {/* Toggle between login / registration */}
           <div className="pt-4 border-t border-[#e9ecef] text-center">
@@ -236,7 +344,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
               {isLogin ? 'Não possui uma conta corporativa?' : 'Já possui uma conta ativa?'}
               <button 
                 onClick={handleToggleMode}
-                className="ml-1 text-[#f28f3b] hover:text-[#de7c2a] font-bold underline focus:outline-none"
+                className="ml-1 text-[#f28f3b] hover:text-[#de7c2a] font-bold underline focus:outline-none cursor-pointer"
               >
                 {isLogin ? 'Cadastre-se agora mesmo' : 'Acesse o Painel'}
               </button>

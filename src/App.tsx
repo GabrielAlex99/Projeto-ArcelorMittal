@@ -138,12 +138,32 @@ export default function App() {
   };
 
   // Handler to add newly proposed solution from form
-  const handleAddProposta = (novaProposta: Proposta) => {
+  const handleAddProposta = async (novaProposta: Proposta) => {
     const itemWithAuth: Proposta = {
       ...novaProposta,
       userEmail: currentUser ? currentUser.email : undefined
     };
     setPropostas((prev) => [itemWithAuth, ...prev]);
+
+    // Real full-stack email trigger for proposal submission
+    try {
+      const resp = await fetch('/api/enviar-email-esg', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tipo: 'Proposta',
+          data: itemWithAuth
+        })
+      });
+      if (resp.ok) {
+        const result = await resp.json();
+        console.log('Proposal notification email sent successfully to coordinator:', result);
+      }
+    } catch (err) {
+      console.error('Failed to dispatch proposal notification email:', err);
+    }
   };
 
   // CRUD modifications for Relato in active session

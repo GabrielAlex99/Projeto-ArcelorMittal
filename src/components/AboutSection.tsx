@@ -69,6 +69,123 @@ export default function AboutSection() {
 
         </div>
 
+        {/* UN SDGs (ODS) Section */}
+        <div className="pt-12 mt-12 border-t border-gray-200 text-left">
+          <div className="flex items-center space-x-2 mb-6">
+            <span className="w-8 h-px bg-[#1b4332]"></span>
+            <span className="text-xs font-bold text-[#f28f3b] uppercase tracking-widest">Compromisso Global</span>
+          </div>
+          
+          <div className="max-w-3xl mb-8">
+            <h3 className="font-sans font-bold text-2xl text-[#1b4332] tracking-tight">
+              Alinhamento com as ODS da Agenda 2030 (ONU)
+            </h3>
+            <p className="text-gray-650 text-sm mt-2 leading-relaxed">
+              O projeto atua diretamente na consecução de metas globais da Organização das Nações Unidas (ONU) para o desenvolvimento sustentável. Mapeamos os pontos críticos comunitários correlacionando-os aos seguintes Objetivos de Desenvolvimento Sustentável (ODS):
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            {/* ODS 3 */}
+            <div className="p-5 bg-white border border-[#4C9F38]/20 hover:border-[#4C9F38] rounded-2.5xl shadow-2xs transition-all relative group text-left">
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#4C9F38] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
+                3
+              </div>
+              <span className="text-[10px] font-bold text-[#4C9F38] uppercase tracking-wider block mb-1">ODS 3</span>
+              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Saúde e Bem-Estar</h4>
+              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
+                Combate à proliferação de moléstias do trato respiratório e estresse crônico causados pela dispersão descontrolada de poeiras pesadas e poluição sonora contínua.
+              </p>
+            </div>
+
+            {/* ODS 6 */}
+            <div className="p-5 bg-white border border-[#26BDE2]/20 hover:border-[#26BDE2] rounded-2.5xl shadow-2xs transition-all relative group text-left">
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#26BDE2] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
+                6
+              </div>
+              <span className="text-[10px] font-bold text-[#26BDE2] uppercase tracking-wider block mb-1">ODS 6</span>
+              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Água Potável e Saneamento</h4>
+              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
+                Mapeamento ativo para sanar contaminações furtivas em mananciais, poços rasos periféricos e bacias de amortecimento por metais pesados e efluentes industriais líquidos.
+              </p>
+            </div>
+
+            {/* ODS 9 */}
+            <div className="p-5 bg-white border border-[#F36D25]/20 hover:border-[#F36D25] rounded-2.5xl shadow-2xs transition-all relative group text-left">
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#F36D25] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
+                9
+              </div>
+              <span className="text-[10px] font-bold text-[#F36D25] uppercase tracking-wider block mb-1">ODS 9</span>
+              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Indústria, Inovação e Infra</h4>
+              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
+                Estímulo ao desenvolvimento de processos produtivos limpos por meio de propostas tecnológicas, cinturões florestais de atenuação e aspersão inteligente.
+              </p>
+            </div>
+
+            {/* ODS 11 */}
+            <div className="p-5 bg-white border border-[#FD9D24]/20 hover:border-[#FD9D24] rounded-2.5xl shadow-2xs transition-all relative group text-left">
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#FD9D24] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
+                11
+              </div>
+              <span className="text-[10px] font-bold text-[#FD9D24] uppercase tracking-wider block mb-1">ODS 11</span>
+              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Cidades e Comunidades</h4>
+              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
+                Redução drástica do impacto ecológico e vulnerabilidade habitacional de bairros operários lindeiros a polos industriais petroquímicos e siderúrgicos nacionais.
+              </p>
+            </div>
+
+            {/* ODS 12 */}
+            <div className="p-5 bg-white border border-[#C1971F]/20 hover:border-[#C1971F] rounded-2.5xl shadow-2xs transition-all relative group text-left">
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#C1971F] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
+                12
+              </div>
+              <span className="text-[10px] font-bold text-[#C1971F] uppercase tracking-wider block mb-1">ODS 12</span>
+              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Consumo e Prod. Responsáveis</h4>
+              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
+                Destinação segura de escórias industriais, reaproveitamento de agregados na economia circular e promoção da simbiose industrial perante a comunidade.
+              </p>
+            </div>
+
+            {/* ODS 13 */}
+            <div className="p-5 bg-white border border-[#3F7E44]/20 hover:border-[#3F7E44] rounded-2.5xl shadow-2xs transition-all relative group text-left">
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#3F7E44] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
+                13
+              </div>
+              <span className="text-[10px] font-bold text-[#3F7E44] uppercase tracking-wider block mb-1">ODS 13</span>
+              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Ação Contra a Mudança do Clima</h4>
+              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
+                Plantios perimetrais de arborização viária para arrefecimento térmico nas vilas operárias, sequestro direto de gases estufa e regulação de microclima local.
+              </p>
+            </div>
+
+            {/* ODS 15 */}
+            <div className="p-5 bg-white border border-[#56C02B]/20 hover:border-[#56C02B] rounded-2.5xl shadow-2xs transition-all relative group text-left">
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#56C02B] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
+                15
+              </div>
+              <span className="text-[10px] font-bold text-[#56C02B] uppercase tracking-wider block mb-1">ODS 15</span>
+              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Vida Terrestre</h4>
+              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
+                Uso de sementes e mudas endêmicas da Mata Atlântica/Cerrado para recuperação botânica de corredores degradados e faixas de refúgio ecológico.
+              </p>
+            </div>
+
+            {/* ODS 17 */}
+            <div className="p-5 bg-white border border-[#194873]/20 hover:border-[#194873] rounded-2.5xl shadow-2xs transition-all relative group text-left">
+              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#194873] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
+                17
+              </div>
+              <span className="text-[10px] font-bold text-[#194873] uppercase tracking-wider block mb-1">ODS 17</span>
+              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Parcerias e Meios de Implantação</h4>
+              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
+                Aproximação multissetorial entre conselhos comunitários de saúde, academia regional técnica e agentes empresariais em prol do bem comum socioambiental.
+              </p>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </section>
   );

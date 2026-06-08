@@ -1,6 +1,6 @@
 import React from 'react';
 import { Relato, Proposta, PlataformaUser } from '../types';
-import { Activity, ShieldAlert, Award, TrendingUp, Users, CheckCircle, Download, Lock } from 'lucide-react';
+import { Activity, ShieldAlert, Award, TrendingUp, Users, CheckCircle, Download, Lock, Bot, Sparkles } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 
 interface DashboardESGProps {
@@ -22,6 +22,16 @@ export default function DashboardESG({ relatos, propostas, currentUser }: Dashbo
 
   const acoesEmAndamento = 12;
   const comunidadesImpactadas = 9;
+
+  // Sentiment analytics calculations
+  const totalWithSentiment = relatos.length;
+  const countCriticosSentiment = relatos.filter(r => r.sentimento === 'crítico' || !r.sentimento).length;
+  const countNeutrosSentiment = relatos.filter(r => r.sentimento === 'neutro').length;
+  const countPositivosSentiment = relatos.filter(r => r.sentimento === 'positivo').length;
+
+  const pctCriticos = totalWithSentiment > 0 ? Math.round((countCriticosSentiment / totalWithSentiment) * 100) : 80;
+  const pctNeutros = totalWithSentiment > 0 ? Math.round((countNeutrosSentiment / totalWithSentiment) * 100) : 20;
+  const pctPositivos = totalWithSentiment > 0 ? Math.round((countPositivosSentiment / totalWithSentiment) * 100) : 0;
 
   // Percentage estimations for Kategoris
   const categoriasDistrib = [
@@ -54,11 +64,19 @@ export default function DashboardESG({ relatos, propostas, currentUser }: Dashbo
       format: 'a4'
     });
 
-    // Color definitions
-    const primaryGreen = [27, 67, 50]; // #1b4332
-    const lightBg = [245, 247, 246]; // #f5f7f6
-    const borderGray = [233, 236, 239]; // #e9ecef
+    const addPageFooter = (documentObj: typeof doc, pageNum: number) => {
+      documentObj.setFont('helvetica', 'normal');
+      documentObj.setFontSize(6.5);
+      documentObj.setTextColor(150, 155, 150);
+      documentObj.text(
+        'Conselho de Governança ESG e Relações Comunitárias. Este relatório possui validade interna para fins de auditoria socioambiental.',
+        15,
+        287
+      );
+      documentObj.text(`Página ${pageNum}`, 195, 287, { align: 'right' });
+    };
 
+    // ----- PAGE 1 -----
     // Top banner
     doc.setFillColor(27, 67, 50);
     doc.rect(0, 0, 210, 36, 'F');
@@ -66,13 +84,13 @@ export default function DashboardESG({ relatos, propostas, currentUser }: Dashbo
     // Title text inside banner
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(15);
+    doc.setFontSize(14);
     doc.text('PRESERVAÇÃO & COMPLIANCE SOCIOAMBIENTAL', 15, 14);
     
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(190, 215, 200);
-    doc.text('Relatório Consolidado de Impacto ESG e Prioridade Comunitária', 15, 20);
+    doc.text('Relatório Consolidado de Metodologias ESG, Relatos de Impacto e Propostas', 15, 20);
     doc.text(`Data de Emissão: ${new Date().toLocaleString('pt-BR')}`, 15, 25);
 
     if (currentUser) {
@@ -89,20 +107,20 @@ export default function DashboardESG({ relatos, propostas, currentUser }: Dashbo
 
     // Document Title Section
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
+    doc.setFontSize(12);
     doc.setTextColor(27, 67, 50);
-    doc.text('Ranking de Prioridade Socioambiental', 15, 48);
+    doc.text('1. Diagnóstico e Métricas de Impacto ESG', 15, 48);
 
     // Decorative underline separator
     doc.setDrawColor(27, 67, 50);
-    doc.setLineWidth(0.75);
+    doc.setLineWidth(0.5);
     doc.line(15, 51, 195, 51);
 
     // Description text block
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
     doc.setTextColor(80, 85, 80);
-    const introText = 'Este relatório apresenta a matriz de ponderação socioambiental calculada com base na gravidade dos incidentes indicados e a densidade populacional em áreas de alta vulnerabilidade. Os dados são utilizados para auditorias de integridade ética, responsabilidade corporativa ESG e direcionamento de recursos emergenciais para justiça climática territorial.';
+    const introText = 'Este relatório consolidado apresenta o diagnóstico de integridade ética, responsabilidade corporativa e direitos humanos no entorno industrial. Os dados mostram a estatística das queixas comunitárias, ponderadas de acordo com a vulnerabilidade territorial dos bairros próximos e a intensidade do sentimento interpretado cognitivamente.';
     const splitText = doc.splitTextToSize(introText, 180);
     doc.text(splitText, 15, 56);
 
@@ -115,48 +133,50 @@ export default function DashboardESG({ relatos, propostas, currentUser }: Dashbo
 
     // Stats Labels inside card
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(100, 105, 100);
     doc.text('TOTAL RELATOS', 20, 73);
-    doc.text('PROBLEMAS CRÍTICOS', 70, 73);
-    doc.text('OPERAÇÕES ATIVAS', 125, 73);
-    doc.text('COMUNIDADES', 165, 73);
+    doc.text('CONFLITOS CRÍTICOS', 65, 73);
+    doc.text('PROPOSTAS ATIVAS', 120, 73);
+    doc.text('SENTIMENTO CRÍTICO', 158, 73);
 
     doc.setFontSize(10.5);
     doc.setTextColor(27, 67, 50);
     doc.text(`${totalRelatos}`, 20, 79);
     doc.setTextColor(220, 53, 69); // Rose color for critical
-    doc.text(`${totalCriticos}`, 70, 79);
+    doc.text(`${totalCriticos}`, 65, 79);
     doc.setTextColor(27, 67, 50);
-    doc.text(`${acoesEmAndamento}`, 125, 79);
-    doc.text(`${comunidadesImpactadas}`, 165, 79);
+    doc.text(`${totalPropostas}`, 120, 79);
+    doc.setTextColor(220, 53, 69);
+    doc.text(`${pctCriticos}%`, 158, 79);
+
+    // Table Section 2: Relatos Recebidos
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(27, 67, 50);
+    doc.text('2. Relatos Ativos Registrados pelos Cidadãos', 15, 94);
+    doc.setDrawColor(27, 67, 50);
+    doc.setLineWidth(0.5);
+    doc.line(15, 97, 195, 97);
 
     // Table Header
-    let currentY = 92;
+    let currentY = 102;
     doc.setFillColor(27, 67, 50);
     doc.rect(15, currentY, 180, 8, 'F');
     
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(255, 255, 255);
-    doc.text('Comunidade / Região', 17, currentY + 5.5);
-    doc.text('Problema Territorial Detectado', 60, currentY + 5.5);
-    doc.text('Gravidade', 115, currentY + 5.5);
-    doc.text('Registros', 135, currentY + 5.5);
-    doc.text('Vulnerabilidade', 152, currentY + 5.5);
-    doc.text('Prioridade ESG', 178, currentY + 5.5);
-
-    // Data rows
-    const items = [
-      { nome: 'Jesuítas (Santa Cruz - RJ)', prob: 'Particulado siderúrgico sedimentável (Fumaça)', grav: 'Alta', reg: '142 relatos', vul: 'Alta Vuln.', pr: 'Crítica' },
-      { nome: 'Santa Cruz Navegantes (SP)', prob: 'Assoreamento e combustível estuarino', grav: 'Alta', reg: '94 relatos', vul: 'Alta Vuln.', pr: 'Crítica' },
-      { nome: 'Vila Parisi (Cubatão - SP)', prob: 'Ruído industrial contínuo noturno (NBR 10151)', grav: 'Média', reg: '85 relatos', vul: 'Média Vuln.', pr: 'Média' },
-      { nome: 'Bairro Veneza (Ipatinga - MG)', prob: 'Ilha de calor urbana e fallout de coque', grav: 'Média', reg: '63 relatos', vul: 'Média Vuln.', pr: 'Baixa' },
-      { nome: 'Zona Res. (Candiota - RS)', prob: 'Dispersão de cinzas de carvão mineral', grav: 'Alta', reg: '41 relatos', vul: 'Baixa Vuln.', pr: 'Baixa' }
-    ];
+    doc.text('Região / Bairro', 17, currentY + 5.5);
+    doc.text('Problema Detalhado', 60, currentY + 5.5);
+    doc.text('Gravidade', 120, currentY + 5.5);
+    doc.text('Sentimento (IA)', 142, currentY + 5.5);
+    doc.text('Data', 175, currentY + 5.5);
 
     currentY += 8;
-    items.forEach((item, idx) => {
+    const relatoList = [...relatos];
+
+    relatoList.forEach((r, idx) => {
       // Row Background alternating colors
       if (idx % 2 === 0) {
         doc.setFillColor(249, 250, 249);
@@ -172,54 +192,153 @@ export default function DashboardESG({ relatos, propostas, currentUser }: Dashbo
       doc.setFontSize(7.5);
       doc.setTextColor(40, 45, 40);
 
-      // Text positions
+      // Bairro
       doc.setFont('helvetica', 'bold');
-      doc.text(item.nome, 17, currentY + 7);
+      const wrappedBairro = doc.splitTextToSize(r.bairro, 42);
+      doc.text(wrappedBairro, 17, currentY + 5);
       
+      // Problema
       doc.setFont('helvetica', 'normal');
-      const wrappedDesc = doc.splitTextToSize(item.prob, 52);
-      doc.text(wrappedDesc, 60, currentY + 5.5);
+      const probText = r.problema.length > 50 ? r.problema.substring(0, 47) + '...' : r.problema;
+      const wrappedDesc = doc.splitTextToSize(probText, 57);
+      doc.text(wrappedDesc, 60, currentY + 5);
 
-      doc.text(item.grav, 115, currentY + 7);
-      doc.text(item.reg, 135, currentY + 7);
-      doc.text(item.vul, 152, currentY + 7);
-
-      // Apply prioridade color styling
-      if (item.pr === 'Crítica') {
+      // Gravidade
+      doc.setFont('helvetica', 'bold');
+      if (r.gravidade === 'Crítica' || r.gravidade === 'Alta') {
         doc.setTextColor(220, 53, 69);
-        doc.setFont('helvetica', 'bold');
-      } else if (item.pr === 'Média') {
-        doc.setTextColor(242, 143, 59);
-        doc.setFont('helvetica', 'bold');
       } else {
-        doc.setTextColor(27, 67, 50);
-        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(242, 143, 59);
       }
-      doc.text(item.pr, 178, currentY + 7);
+      doc.text(r.gravidade, 120, currentY + 6);
+
+      // Sentimento (IA)
+      const sent = r.sentimento || 'crítico';
+      if (sent === 'crítico') {
+        doc.setTextColor(220, 53, 69);
+        doc.text('CRÍTICO', 142, currentY + 6);
+      } else if (sent === 'positivo') {
+        doc.setTextColor(27, 67, 50);
+        doc.text('POSITIVO', 142, currentY + 6);
+      } else {
+        doc.setTextColor(110, 115, 110);
+        doc.text('NEUTRO', 142, currentY + 6);
+      }
+
+      // Data
+      doc.setTextColor(80, 85, 80);
+      doc.setFont('helvetica', 'normal');
+      doc.text(r.data, 175, currentY + 6);
 
       currentY += 11;
     });
 
-    // Legal / Compliance stamp
-    currentY += 12;
-    doc.setFillColor(245, 247, 246);
-    doc.rect(15, currentY, 180, 14, 'F');
-    doc.setDrawColor(27, 67, 50);
-    doc.setLineWidth(0.3);
-    doc.line(15, currentY, 15, currentY + 14); // Left green border line
+    addPageFooter(doc, 1);
+
+    // ----- PAGE 2: PROPOSTAS -----
+    doc.addPage();
+    
+    // Top banner Page 2
+    doc.setFillColor(27, 67, 50);
+    doc.rect(0, 0, 210, 20, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('COMPLIANCE ESG: PORTFÓLIO DE PROPOSTAS E INTERVENÇÕES CO-CRIADAS', 15, 12);
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
+    doc.setFontSize(12);
     doc.setTextColor(27, 67, 50);
-    doc.text('PRODUTO DE DUE DILIGENCE DE CONFORIDADE E TRANSPARÊNCIA', 18, currentY + 4.5);
+    doc.text('3. Propostas Socioambientais Ativas para Mitigação', 15, 32);
+    doc.setDrawColor(27, 67, 50);
+    doc.setLineWidth(0.5);
+    doc.line(15, 35, 195, 35);
+
+    let propY = 40;
+    doc.setFillColor(27, 67, 50);
+    doc.rect(15, propY, 180, 8, 'F');
     
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(110, 115, 110);
-    doc.text('Conselho de Governança ESG e Relações Comunitárias. Este relatório possui validade interna para fins de auditoria socioambiental.', 18, currentY + 9);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(255, 255, 255);
+    doc.text('Título da Proposta', 17, propY + 5.5);
+    doc.text('Tema Relacionado', 75, propY + 5.5);
+    doc.text('Viabilidade', 125, propY + 5.5);
+    doc.text('Aprox. Custo', 150, propY + 5.5);
+    doc.text('Prazo', 172, propY + 5.5);
+
+    propY += 8;
+    const propList = [...propostas];
+
+    if (propList.length === 0) {
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(9);
+      doc.setTextColor(120, 120, 120);
+      doc.text('Nenhuma proposta de mitigação foi submetida até o momento.', 17, propY + 8);
+    } else {
+      propList.forEach((p, idx) => {
+        // Prevent page overflow
+        if (propY > 260) {
+          addPageFooter(doc, 2);
+          doc.addPage();
+          propY = 20;
+
+          doc.setFillColor(27, 67, 50);
+          doc.rect(15, propY, 180, 8, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(255, 255, 255);
+          doc.text('Título da Proposta', 17, propY + 5.5);
+          doc.text('Tema Relacionado', 75, propY + 5.5);
+          doc.text('Viabilidade', 125, propY + 5.5);
+          doc.text('Aprox. Custo', 150, propY + 5.5);
+          doc.text('Prazo', 172, propY + 5.5);
+          propY += 8;
+        }
+
+        if (idx % 2 === 0) {
+          doc.setFillColor(249, 250, 249);
+          doc.rect(15, propY, 180, 12, 'F');
+        }
+
+        doc.setDrawColor(230, 235, 230);
+        doc.setLineWidth(0.15);
+        doc.line(15, propY + 12, 195, propY + 12);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(27, 67, 50);
+        const wrappedTitle = doc.splitTextToSize(p.titulo, 55);
+        doc.text(wrappedTitle, 17, propY + 5);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(60, 65, 60);
+        const wrappedTema = doc.splitTextToSize(p.problemaRelacionado, 46);
+        doc.text(wrappedTema, 75, propY + 5);
+
+        doc.setFont('helvetica', 'bold');
+        if (p.viabilidade === 'Alta') {
+          doc.setTextColor(27, 67, 50);
+        } else if (p.viabilidade === 'Média') {
+          doc.setTextColor(242, 143, 59);
+        } else {
+          doc.setTextColor(220, 53, 69);
+        }
+        doc.text(p.viabilidade, 125, propY + 7);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(60, 65, 60);
+        doc.text(p.custo, 150, propY + 7);
+        doc.text(p.prazo, 172, propY + 7);
+
+        propY += 12;
+      });
+    }
+
+    addPageFooter(doc, 2);
 
     // Save
-    doc.save('ranking-de-prioridade-esg.pdf');
+    doc.save('relatorio-consolidado-esg.pdf');
   };
 
   return (
@@ -303,11 +422,11 @@ export default function DashboardESG({ relatos, propostas, currentUser }: Dashbo
         </div>
 
         {/* Dynamic graphics sections using layout structures */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           
           {/* Categoria Distribution chart */}
           <div className="bg-white border border-[#e9ecef] rounded-3xl p-6 shadow-md">
-            <h3 className="font-sans font-bold text-lg text-[#1b4332] mb-6 flex items-center justify-between">
+            <h3 className="font-sans font-bold text-lg text-[#1b4332] mb-6 flex items-center justify-between font-sans">
               <span>Problemas por Categoria</span>
               <span className="text-xs text-[#0b3d59] font-mono font-semibold">Consolidado Geral</span>
             </h3>
@@ -332,12 +451,12 @@ export default function DashboardESG({ relatos, propostas, currentUser }: Dashbo
 
           {/* Gravity Chart */}
           <div className="bg-white border border-[#e9ecef] rounded-3xl p-6 shadow-md">
-            <h3 className="font-sans font-bold text-lg text-[#1b4332] mb-6 flex items-center justify-between">
+            <h3 className="font-sans font-bold text-lg text-[#1b4332] mb-6 flex items-center justify-between font-sans">
               <span>Nível de Gravidade Geral</span>
               <span className="text-xs text-rose-600 font-mono font-semibold">Sensibilidade Crítica</span>
             </h3>
 
-            <div className="space-y-5.5 pt-1">
+            <div className="space-y-5.5 pt-1 font-sans">
               {gravidadeDistrib.map((g) => (
                 <div key={g.label} className="space-y-1.5">
                   <div className="flex justify-between text-xs">
@@ -358,9 +477,80 @@ export default function DashboardESG({ relatos, propostas, currentUser }: Dashbo
             </div>
           </div>
 
+          {/* AI Sentiment Analysis Card */}
+          <div className="bg-white border border-[#e9ecef] rounded-3xl p-6 shadow-md">
+            <h3 className="font-sans font-bold text-lg text-[#1b4332] mb-6 flex items-center justify-between font-sans">
+              <span className="flex items-center gap-1.5 opacity-90">
+                <Bot className="h-5 w-5 text-[#f28f3b]" />
+                <span>Sentimentos (IA)</span>
+              </span>
+              <span className="text-[10px] text-[#f28f3b] font-mono font-bold px-2 py-0.5 bg-[#f28f3b]/10 rounded-full flex items-center gap-1 shrink-0">
+                <Sparkles className="h-3 w-3 animate-pulse" />
+                <span>Cognitivo</span>
+              </span>
+            </h3>
+
+            <div className="space-y-4 pt-1 font-sans">
+              {/* Critical sentiment */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-650 font-semibold flex items-center">
+                    <span className="w-2 h-2 bg-rose-500 rounded-full mr-2"></span>
+                    Críticos / Negativos
+                  </span>
+                  <span className="text-[#1b4332] font-bold">{pctCriticos}%</span>
+                </div>
+                <div className="w-full h-3 bg-[#f5f7f6] rounded-full overflow-hidden border border-[#e9ecef]/40">
+                  <div 
+                    className="h-full bg-rose-500 rounded-full transition-all duration-1000"
+                    style={{ width: `${pctCriticos}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Neutral sentiment */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-650 font-semibold flex items-center">
+                    <span className="w-2 h-2 bg-slate-400 rounded-full mr-2"></span>
+                    Neutros / Objetivos
+                  </span>
+                  <span className="text-[#1b4332] font-bold">{pctNeutros}%</span>
+                </div>
+                <div className="w-full h-3 bg-[#f5f7f6] rounded-full overflow-hidden border border-[#e9ecef]/40">
+                  <div 
+                    className="h-full bg-slate-400 rounded-full transition-all duration-1000"
+                    style={{ width: `${pctNeutros}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Positive sentiment */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-650 font-semibold flex items-center">
+                    <span className="w-2 h-2 bg-emerald-400 rounded-full mr-2"></span>
+                    Positivos / Construtivos
+                  </span>
+                  <span className="text-[#1b4332] font-bold">{pctPositivos}%</span>
+                </div>
+                <div className="w-full h-3 bg-[#f5f7f6] rounded-full overflow-hidden border border-[#e9ecef]/40">
+                  <div 
+                    className="h-full bg-emerald-400 rounded-full transition-all duration-1000"
+                    style={{ width: `${pctPositivos}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-[10px] text-gray-500 mt-5 leading-normal italic font-medium">
+              Análise cognitiva automática via Gemini AI. Processa semântica e contexto de manifestações comunitárias brasileiras.
+            </p>
+          </div>
+
           {/* Actions Status timeline list */}
           <div className="bg-white border border-[#e9ecef] rounded-3xl p-6 shadow-md">
-            <h3 className="font-sans font-bold text-lg text-[#1b4332] mb-6 flex items-center justify-between">
+            <h3 className="font-sans font-bold text-lg text-[#1b4332] mb-6 flex items-center justify-between font-sans">
               <span>Status das Ações Mitigatórias</span>
               <span className="text-xs text-[#0b3d59] font-mono font-semibold">Transparência ESG</span>
             </h3>
@@ -406,7 +596,7 @@ export default function DashboardESG({ relatos, propostas, currentUser }: Dashbo
                   id="btn-export-ranking-pdf"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  <span>Exportar PDF</span>
+                  <span>Exportar Relatório PDF</span>
                 </button>
               ) : (
                 <button

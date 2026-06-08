@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Relato, Category } from '../types';
-import { Send, CheckCircle, Shield, AlertTriangle, User, MapPin, Link2 } from 'lucide-react';
+import { Send, CheckCircle, Shield, AlertTriangle, User, MapPin, Link2, Loader2 } from 'lucide-react';
 
 interface ReportFormProps {
   onAddRelato: (novo: Relato) => void;
@@ -9,6 +9,9 @@ interface ReportFormProps {
 export default function ReportForm({ onAddRelato }: ReportFormProps) {
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [nome, setNome] = useState('');
+  const [cep, setCep] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [uf, setUf] = useState('');
   const [bairro, setBairro] = useState('');
   const [categoria, setCategoria] = useState<Category>('Ar');
   const [problema, setProblema] = useState('');
@@ -19,15 +22,52 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
   const [lgpdConsent, setLgpdConsent] = useState(false);
   
   const [submitted, setSubmitted] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isFetchingCep, setIsFetchingCep] = useState(false);
+  const [cepError, setCepError] = useState('');
   const [errorMess, setErrorMess] = useState('');
 
   const bairrosSugeridos = [
-    'Jesuítas (Santa Cruz - RJ)',
-    'Vila Parisi (Cubatão - SP)',
-    'Santa Cruz dos Navegantes (Guarujá - SP)',
-    'Bairro Veneza (Ipatinga - MG)',
-    'Zona Residencial (Candiota - RS)'
+    { label: 'Jesuítas (Santa Cruz - RJ)', bairro: 'Jesuítas (Santa Cruz)', cidade: 'Rio de Janeiro', uf: 'RJ', cep: '23525-060' },
+    { label: 'Vila Parisi (Cubatão - SP)', bairro: 'Vila Parisi', cidade: 'Cubatão', uf: 'SP', cep: '11500-000' },
+    { label: 'Santa Cruz dos Navegantes (Guarujá - SP)', bairro: 'Santa Cruz dos Navegantes', cidade: 'Guarujá', uf: 'SP', cep: '11403-100' },
+    { label: 'Bairro Veneza (Ipatinga - MG)', bairro: 'Veneza', cidade: 'Ipatinga', uf: 'MG', cep: '35160-025' },
+    { label: 'Zona Residencial (Candiota - RS)', bairro: 'Centro', cidade: 'Candiota', uf: 'RS', cep: '96495-000' }
   ];
+
+  const handleCepLookup = async (cepValue: string) => {
+    setCep(cepValue);
+    const cleaned = cepValue.replace(/\D/g, '');
+    if (cleaned.length !== 8) {
+      setCepError('');
+      return;
+    }
+
+    setIsFetchingCep(true);
+    setCepError('');
+    try {
+      const resp = await fetch(`https://viacep.com.br/ws/${cleaned}/json/`);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && !data.erro) {
+          setBairro(data.bairro || '');
+          setCidade(data.localidade || '');
+          setUf(data.uf || '');
+          setCepError('');
+          console.log(`Auto-filled address via ViaCEP: ${data.bairro}, ${data.localidade} - ${data.uf}`);
+        } else {
+          setCepError('CEP não localizado nas bases de dados. Preencha manualmente.');
+        }
+      } else {
+        setCepError('Serviço de CEP temporariamente indisponível.');
+      }
+    } catch (err) {
+      console.error('Error during ViaCEP fetching:', err);
+      setCepError('Falha ao conectar com o serviço de CEP.');
+    } finally {
+      setIsFetchingCep(false);
+    }
+  };
 
   const categoriesChoices: { value: Category; label: string }[] = [
     { value: 'Ar', label: 'Poluição do ar / Fumaça' },
@@ -38,7 +78,7 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
     { value: 'Verde urbano', label: 'Falta de áreas verdes / Ilhas de calor' }
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // LGPD Validation
@@ -52,6 +92,14 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
       setErrorMess('Por favor, informe o bairro ou região.');
       return;
     }
+    if (!cidade.trim()) {
+      setErrorMess('Por favor, informe a cidade do incidente.');
+      return;
+    }
+    if (!uf.trim()) {
+      setErrorMess('Por favor, entre com a sigla do estado.');
+      return;
+    }
     if (!problema.trim()) {
       setErrorMess('Por favor, defina em uma linha qual é o problema principal.');
       return;
@@ -62,21 +110,45 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
     }
 
     setErrorMess('');
+    setIsAnalyzing(true);
 
     // Generate random coordinate for the new point on map relative to neighborhood
     let mapX = 20 + Math.floor(Math.random() * 60);
     let mapY = 20 + Math.floor(Math.random() * 60);
 
     // Fine-tune map coordinate placement according to selected predefined neighborhoods
-    if (bairro.includes('Jesuítas')) { mapX = 28 + Math.random() * 6; mapY = 44 + Math.random() * 6; }
-    else if (bairro.includes('Vila Parisi')) { mapX = 44 + Math.random() * 6; mapY = 36 + Math.random() * 6; }
-    else if (bairro.includes('Navegantes')) { mapX = 67 + Math.random() * 6; mapY = 72 + Math.random() * 4; }
-    else if (bairro.includes('Veneza')) { mapX = 21 + Math.random() * 4; mapY = 76 + Math.random() * 4; }
-    else if (bairro.includes('Candiota')) { mapX = 52 + Math.random() * 6; mapY = 18 + Math.random() * 6; }
+    if (bairro.toLowerCase().includes('jesuítas')) { mapX = 28 + Math.random() * 6; mapY = 44 + Math.random() * 6; }
+    else if (bairro.toLowerCase().includes('parisi')) { mapX = 44 + Math.random() * 6; mapY = 36 + Math.random() * 6; }
+    else if (bairro.toLowerCase().includes('navegantes')) { mapX = 67 + Math.random() * 6; mapY = 72 + Math.random() * 4; }
+    else if (bairro.toLowerCase().includes('veneza')) { mapX = 21 + Math.random() * 4; mapY = 76 + Math.random() * 4; }
+    else if (bairro.toLowerCase().includes('candiota')) { mapX = 52 + Math.random() * 6; mapY = 18 + Math.random() * 6; }
+
+    let analyzedSentiment: 'crítico' | 'neutro' | 'positivo' = 'neutro';
+
+    try {
+      const response = await fetch('/api/sentimento', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: `${problema}. ${descricao}` }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.sentiment) {
+          analyzedSentiment = data.sentiment;
+        }
+      }
+    } catch (apiError) {
+      console.error("Sentiment analysis fetching failed, relying on local heuristic:", apiError);
+    }
 
     const novoRelato: Relato = {
       id: String(Date.now()),
       bairro,
+      cidade,
+      uf: uf.toUpperCase(),
+      cep,
       problema,
       descricao,
       gravidade,
@@ -86,21 +158,49 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
       data: new Date().toISOString().split('T')[0],
       coordenadas: { x: Math.round(mapX), y: Math.round(mapY) },
       vulnerabilidade: Math.random() > 0.4 ? 'Alta' : 'Média',
-      numRelatos: 1
+      numRelatos: 1,
+      sentimento: analyzedSentiment
     };
 
+    // Trigger local application state update
     onAddRelato(novoRelato);
+
+    // Real full-stack trigger: Send email report to the coordinator Galexander Santos
+    try {
+      const notifyEmailResp = await fetch('/api/enviar-email-esg', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tipo: 'Relato',
+          data: novoRelato
+        })
+      });
+      if (notifyEmailResp.ok) {
+        const emailResult = await notifyEmailResp.json();
+        console.log(`Email notification sent successfully to ESG Coordinator:`, emailResult);
+      }
+    } catch (emailErr) {
+      console.error('Failed to trigger background email transmission report:', emailErr);
+    }
+
+    setIsAnalyzing(false);
     setSubmitted(true);
   };
 
   const handleReset = () => {
     setBairro('');
+    setCidade('');
+    setUf('');
+    setCep('');
     setProblema('');
     setDescricao('');
     setEvidenciaLink('');
     setNome('');
     setIsAnonymous(true);
     setLgpdConsent(false);
+    setCepError('');
     setSubmitted(false);
   };
 
@@ -215,50 +315,122 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
                 </div>
               )}
 
-              {/* Neighborhood and category grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+              {/* Smart CEP Address Geolocation Panel */}
+              <div className="bg-white p-5 rounded-2.5xl border border-gray-150 shadow-3xs space-y-4">
+                <span className="text-[10px] font-bold text-[#f28f3b] uppercase tracking-widest block">Busca de Endereço Inteligente</span>
                 
-                {/* Bairro Region with autocomplete suggestions */}
-                <div className="space-y-1.5">
-                  <label htmlFor="select-bairro" className="text-xs font-bold text-gray-600 uppercase block flex justify-between">
-                    <span>Bairro / Região *</span>
-                    <span className="text-[10px] text-[#f28f3b] font-normal lowercase">(vizinhos mapeados)</span>
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="select-bairro"
-                      value={bairro}
-                      required
-                      aria-required="true"
-                      onChange={(e) => setBairro(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-white border border-[#e9ecef] text-gray-800 focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors appearance-none shadow-xs"
-                    >
-                      <option value="">Selecione a região...</option>
-                      {bairrosSugeridos.map(b => (
-                        <option key={b} value={b}>{b}</option>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                  {/* CEP Input */}
+                  <div className="space-y-1.5 md:col-span-2 text-left">
+                    <label htmlFor="input-cep" className="text-xs font-bold text-gray-600 uppercase block">CEP do Local do Incidente</label>
+                    <div className="relative">
+                      <input
+                        id="input-cep"
+                        type="text"
+                        value={cep}
+                        maxLength={9}
+                        onChange={(e) => handleCepLookup(e.target.value)}
+                        placeholder="Ex: 23525-060"
+                        className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-[#f5f7f6] border border-[#e9ecef] text-gray-800 placeholder-gray-400 focus:outline-[#1b4332] text-sm font-medium transition-colors cursor-text"
+                      />
+                      {isFetchingCep && (
+                        <Loader2 className="absolute right-3 top-3 h-4.5 w-4.5 text-[#1b4332] animate-spin" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quick Preset Selector */}
+                  <div className="md:col-span-2 text-left space-y-2">
+                    <span className="text-[10px] font-semibold text-gray-400 block uppercase">Preenchimento Rápido (Zonas Fornecidas)</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {bairrosSugeridos.map((sugar) => (
+                        <button
+                          key={sugar.cep}
+                          type="button"
+                          onClick={() => {
+                            setCep(sugar.cep);
+                            setBairro(sugar.bairro);
+                            setCidade(sugar.cidade);
+                            setUf(sugar.uf);
+                            setCepError('');
+                          }}
+                          className="px-2.5 py-1 bg-gray-50 border border-gray-200 hover:border-[#1b4332] hover:bg-[#1b4332]/5 text-[10.5px] rounded-lg text-gray-600 transition-all font-semibold cursor-pointer"
+                        >
+                          {sugar.bairro} ({sugar.uf})
+                        </button>
                       ))}
-                    </select>
-                    <MapPin className="absolute right-3.5 top-3.5 h-4 w-4 text-[#1b4332] pointer-events-none" aria-hidden="true" />
+                    </div>
                   </div>
                 </div>
 
-                {/* Category chooser */}
+                {cepError && (
+                  <p className="text-[11px] text-rose-600 font-bold text-left bg-rose-50 border border-rose-100 p-2 rounded-lg animate-fade-in">{cepError}</p>
+                )}
+
+                {/* Filled Address Details */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+                  {/* Bairro */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="input-bairro" className="text-xs font-bold text-gray-600 uppercase block">Bairro / Perímetro *</label>
+                    <input
+                      id="input-bairro"
+                      type="text"
+                      required
+                      value={bairro}
+                      onChange={(e) => setBairro(e.target.value)}
+                      placeholder="Ex: Jesuítas"
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#e9ecef] text-gray-800 text-sm focus:outline-[#1b4332] font-semibold cursor-text"
+                    />
+                  </div>
+
+                  {/* Cidade */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="input-cidade" className="text-xs font-bold text-gray-600 uppercase block">Cidade / Município *</label>
+                    <input
+                      id="input-cidade"
+                      type="text"
+                      required
+                      value={cidade}
+                      onChange={(e) => setCidade(e.target.value)}
+                      placeholder="Ex: Rio de Janeiro"
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#e9ecef] text-gray-800 text-sm focus:outline-[#1b4332] font-semibold cursor-text"
+                    />
+                  </div>
+
+                  {/* Estado (UF) */}
+                  <div className="space-y-1.5">
+                    <label htmlFor="input-uf" className="text-xs font-bold text-gray-600 uppercase block">UF / Estado *</label>
+                    <input
+                      id="input-uf"
+                      type="text"
+                      required
+                      maxLength={2}
+                      value={uf}
+                      onChange={(e) => setUf(e.target.value)}
+                      placeholder="Ex: RJ"
+                      className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#e9ecef] text-gray-800 text-sm uppercase focus:outline-[#1b4332] font-semibold cursor-text"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Category Chooser */}
+              <div className="grid grid-cols-1 gap-6 text-left">
                 <div className="space-y-1.5">
-                  <label htmlFor="select-categoria" className="text-xs font-bold text-gray-600 uppercase block">Categoria do Problema *</label>
+                  <label htmlFor="select-categoria" className="text-xs font-bold text-gray-600 uppercase block">Categoria Geral do Problema *</label>
                   <select
                     id="select-categoria"
                     value={categoria}
                     required
                     aria-required="true"
                     onChange={(e) => setCategoria(e.target.value as Category)}
-                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#e9ecef] text-[#0b3d59] focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors shadow-xs font-medium"
+                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#e9ecef] text-[#0b3d59] focus:outline-[#1b4332] text-sm font-medium cursor-pointer shadow-xs"
                   >
                     {categoriesChoices.map(c => (
                       <option key={c.value} value={c.value}>{c.label}</option>
                     ))}
                   </select>
                 </div>
-
               </div>
 
               {/* Title & Frequency details */}
@@ -390,10 +562,22 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
               <div className="pt-4 border-t border-gray-150 text-right">
                 <button
                   type="submit"
-                  className="px-8 py-3.5 bg-[#0b3d59] hover:bg-[#072a42] text-white font-bold rounded-xl text-sm transition-all shadow-md flex items-center justify-center space-x-2 inline-flex"
+                  disabled={isAnalyzing}
+                  className={`px-8 py-3.5 text-white font-bold rounded-xl text-sm transition-all shadow-md flex items-center justify-center space-x-2 inline-flex ${
+                    isAnalyzing ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#0b3d59] hover:bg-[#072a42]'
+                  }`}
                 >
-                  <Send className="h-4 w-4" />
-                  <span>Enviar Relato Comunitário</span>
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="animate-spin h-4 w-4" />
+                      <span>Analisando Sentimento por IA...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      <span>Enviar Relato Comunitário</span>
+                    </>
+                  )}
                 </button>
               </div>
 

@@ -9,6 +9,9 @@ export type Category = 'Ar' | 'Água' | 'Ruído' | 'Resíduos' | 'Mobilidade' | 
 export interface Relato {
   id: string;
   bairro: string;
+  cidade?: string;
+  uf?: string;
+  cep?: string;
   problema: string;
   descricao: string;
   gravidade: 'Baixa' | 'Média' | 'Alta' | 'Crítica';
@@ -20,6 +23,7 @@ export interface Relato {
   vulnerabilidade: 'Baixa' | 'Média' | 'Alta';
   numRelatos: number;
   userEmail?: string; // Tying to logged-in user
+  sentimento?: 'crítico' | 'neutro' | 'positivo';
 }
 
 export interface Proposta {
