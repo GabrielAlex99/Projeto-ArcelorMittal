@@ -14,6 +14,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [lgpdConsent, setLgpdConsent] = useState(false);
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
@@ -29,6 +30,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
 
     if (!isLogin && !name.trim()) {
       setError('Por favor, preencha o seu nome completo.');
+      return;
+    }
+
+    if (!isLogin && !lgpdConsent) {
+      setError('De acordo com a LGPD, você de aceitar os termos de consentimento para efetuar seu cadastro.');
       return;
     }
 
@@ -96,6 +102,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     setName('');
     setEmail('');
     setPassword('');
+    setLgpdConsent(false);
     setError('');
   };
 
@@ -196,6 +203,22 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
                 </button>
               </div>
             </div>
+
+            {/* LGPD Checkbox for signup form */}
+            {!isLogin && (
+              <div className="flex items-start space-x-2.5 text-xs text-gray-650 bg-[#1b4332]/5 p-3.5 rounded-xl border border-[#1b4332]/10 mt-4 shadow-2xs">
+                <input
+                  id="lgpd-signup"
+                  type="checkbox"
+                  checked={lgpdConsent}
+                  onChange={(e) => setLgpdConsent(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#1b4332] focus:ring-[#1b4332] shrink-0"
+                />
+                <label htmlFor="lgpd-signup" className="leading-relaxed select-none cursor-pointer text-gray-700 font-normal">
+                  Aceito os termos de consentimento da <strong className="text-[#1b4332] font-bold">LGPD</strong>. Autorizo o armazenamento criptografado do meu nome e e-mail de forma protegida para login, autenticação e correspondência às queixas de sustentabilidade enviadas.
+                </label>
+              </div>
+            )}
 
             {/* Submit Button */}
             <button

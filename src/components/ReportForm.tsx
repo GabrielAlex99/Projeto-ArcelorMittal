@@ -16,6 +16,7 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
   const [gravidade, setGravidade] = useState<'Baixa' | 'Média' | 'Alta' | 'Crítica'>('Alta');
   const [descricao, setDescricao] = useState('');
   const [evidenciaLink, setEvidenciaLink] = useState('');
+  const [lgpdConsent, setLgpdConsent] = useState(false);
   
   const [submitted, setSubmitted] = useState(false);
   const [errorMess, setErrorMess] = useState('');
@@ -39,6 +40,12 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // LGPD Validation
+    if (!lgpdConsent) {
+      setErrorMess('De acordo com a LGPD, você deve aceitar os termos de consentimento para envio de dados socioambientais e/ou pessoais.');
+      return;
+    }
 
     // Basic Validation
     if (!bairro.trim()) {
@@ -93,6 +100,7 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
     setEvidenciaLink('');
     setNome('');
     setIsAnonymous(true);
+    setLgpdConsent(false);
     setSubmitted(false);
   };
 
@@ -359,6 +367,22 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
                     className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-[#e9ecef] text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors shadow-xs"
                   />
                   <Link2 className="absolute left-3.5 top-3.5 h-4.5 w-4.5 text-[#1b4332]" aria-hidden="true" />
+                </div>
+              </div>
+
+              {/* LGPD Clause */}
+              <div className="bg-[#1b4332]/5 border border-[#1b4332]/10 rounded-2xl p-4.5 text-left text-xs text-gray-650 space-y-3 shadow-xs">
+                <div className="flex items-start space-x-2.5">
+                  <input
+                    id="checkbox-lgpd-relato"
+                    type="checkbox"
+                    checked={lgpdConsent}
+                    onChange={(e) => setLgpdConsent(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-[#1b4332] focus:ring-[#1b4332]"
+                  />
+                  <label htmlFor="checkbox-lgpd-relato" className="leading-relaxed select-none cursor-pointer text-gray-700">
+                    <strong className="text-[#1b4332] font-semibold">Consentimento LGPD:</strong> Estou ciente e concordo com o tratamento dos dados informados neste relato (incluindo localização geográfica, queixas de impacto e meu nome caso tenha optado por me identificar) em estrita conformidade com a Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/18). Os dados serão utilizados exclusivamente de forma coletiva, transparente e estatística para guiar painéis de priorização socioambiental.
+                  </label>
                 </div>
               </div>
 

@@ -21,6 +21,7 @@ interface AccessibilityMenuProps {
   onDyslexiaFontChange: (dyslexic: boolean) => void;
   onReadingGuideChange: (guide: boolean) => void;
   onSpeechSynthesisChange: (enabled: boolean) => void;
+  onNavigate?: (sectionId: string) => void;
 }
 
 export default function AccessibilityMenu({
@@ -29,7 +30,8 @@ export default function AccessibilityMenu({
   onUnderlineLinksChange,
   onDyslexiaFontChange,
   onReadingGuideChange,
-  onSpeechSynthesisChange
+  onSpeechSynthesisChange,
+  onNavigate
 }: AccessibilityMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [contrast, setContrast] = useState<'normal' | 'high-contrast' | 'grayscale'>('normal');
@@ -66,6 +68,7 @@ export default function AccessibilityMenu({
         else if (e.key === '4') targetId = 'propor';
         else if (e.key === '5') targetId = 'dashboard';
         else if (e.key === '6') targetId = 'banco';
+        else if (e.key === '7') targetId = 'dores';
         else if (e.key === '9') {
           e.preventDefault();
           setIsOpen(prev => !prev);
@@ -75,11 +78,17 @@ export default function AccessibilityMenu({
 
         if (targetId) {
           e.preventDefault();
-          const el = document.getElementById(targetId);
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            el.focus();
+          if (onNavigate) {
+            onNavigate(targetId);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             announceToScreenReader(`Navegando para a seção: ${targetId}`);
+          } else {
+            const el = document.getElementById(targetId);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              el.focus();
+              announceToScreenReader(`Navegando para a seção: ${targetId}`);
+            }
           }
         }
       }
@@ -232,6 +241,7 @@ export default function AccessibilityMenu({
     { key: 'Alt + 4', desc: 'Ir para Form de Propor Solução' },
     { key: 'Alt + 5', desc: 'Ir para o Painel Dashboard ESG' },
     { key: 'Alt + 6', desc: 'Ir para o Banco de Soluções' },
+    { key: 'Alt + 7', desc: 'Ir para Vozes e Impacto Humano 💔' },
     { key: 'Alt + 9', desc: 'Abrir / Fechar este menu' },
     { key: 'Tab', desc: 'Navegar sequencialmente entre botões e campos' },
     { key: 'Enter / Espaço', desc: 'Ativar botões e links focados' }
@@ -240,7 +250,7 @@ export default function AccessibilityMenu({
   return (
     <>
       {/* 1. Unobtrusive Floating Trigger Badge */}
-      <div className="fixed right-5 bottom-24 z-50 flex flex-col items-end gap-2">
+      <div className="fixed right-6 bottom-[84px] z-50 flex flex-col items-end gap-2">
         <button
           onClick={() => {
             setIsOpen(!isOpen);

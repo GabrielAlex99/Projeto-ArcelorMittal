@@ -8,10 +8,13 @@ import DashboardESG from './components/DashboardESG';
 import SolutionBank from './components/SolutionBank';
 import MyRestrictedArea from './components/MyRestrictedArea';
 import AboutSection from './components/AboutSection';
+import CommunityPains from './components/CommunityPains';
+import OnboardingTour from './components/OnboardingTour';
 import CodeViewer from './components/CodeViewer';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
 import AccessibilityMenu from './components/AccessibilityMenu';
+import PitchPresentation from './components/PitchPresentation';
 import { ArrowUp } from 'lucide-react';
 
 import { Relato, Proposta, SolucaoPadrao, PlataformaUser } from './types';
@@ -161,32 +164,10 @@ export default function App() {
     setPropostas((prev) => prev.filter(p => p.id !== id));
   };
 
-  // ScrollSpy pattern: automatically update active section on scroll
+  // Scroll to top when active section changes to make section swaps crisp
   useEffect(() => {
-    const sections = ['home', 'mapa', 'relatar', 'propor', 'dashboard', 'banco', 'restrito', 'sobre'].filter((id) => {
-      if (id === 'restrito' && !currentUser) return false;
-      return true;
-    });
-    
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY + window.innerHeight / 3;
-
-      for (const section of sections) {
-        const el = document.getElementById(section);
-        if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPosition >= top && scrollPosition < top + height) {
-            setActiveSection(section);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [currentUser]);
+    window.scrollTo({ top: 0 });
+  }, [activeSection]);
 
   const rootClasses = [
     "min-h-screen transition-all duration-300",
@@ -260,36 +241,58 @@ export default function App() {
           .dark-mode-root .bg-white,
           .dark-mode-root .bg-slate-50,
           .dark-mode-root .bg-gray-50,
-          .dark-mode-root .bg-\[\#f5f7f6\],
-          .dark-mode-root .bg-emerald-50\/40,
-          .dark-mode-root .bg-[#f5f7f6] {
+          .dark-mode-root .bg-\\[\\#f5f7f6\\],
+          .dark-mode-root .bg-emerald-50\\/40,
+          .dark-mode-root [class*="bg-white"],
+          .dark-mode-root [class*="bg-slate-50"],
+          .dark-mode-root [class*="bg-gray-50"],
+          .dark-mode-root [class*="bg-\\\\[\\\\#f5f7f6\\\\]"],
+          .dark-mode-root [class*="bg-\\\\[\\\\#eef2f0\\\\]"] {
             background-color: #0e1712 !important;
+            background-image: none !important;
             color: #e2e8f0 !important;
+          }
+          /* Clear gradient backgrounds in dark mode and apply deep dark slate bg */
+          .dark-mode-root [class*="bg-gradient-to"] {
+            background-image: none !important;
+            background-color: #080d0a !important;
           }
           /* Target text overrides */
           .dark-mode-root .text-gray-950,
           .dark-mode-root .text-gray-900,
           .dark-mode-root .text-slate-900,
-          .dark-mode-root .text-[#1a3a2a],
-          .dark-mode-root .text-[#1b4332],
           .dark-mode-root .text-gray-800,
           .dark-mode-root .text-slate-800,
-          .dark-mode-root .text-[#2d3436],
           .dark-mode-root .text-gray-700,
-          .dark-mode-root .text-slate-700 {
+          .dark-mode-root .text-slate-700,
+          .dark-mode-root [class*="text-\\\\[\\\\#1b4332\\\\]"],
+          .dark-mode-root [class*="text-\\\\[\\\\#0b3d59\\\\]"],
+          .dark-mode-root [class*="text-\\\\[\\\\#2d3436\\\\]"],
+          .dark-mode-root [class*="text-gray-950"],
+          .dark-mode-root [class*="text-gray-900"],
+          .dark-mode-root [class*="text-slate-900"],
+          .dark-mode-root [class*="text-gray-850"],
+          .dark-mode-root [class*="text-gray-800"],
+          .dark-mode-root [class*="text-slate-800"],
+          .dark-mode-root [class*="text-gray-700"],
+          .dark-mode-root [class*="text-slate-700"] {
             color: #f1f5f9 !important;
           }
           .dark-mode-root .text-gray-650,
-          .dark-mode-root .text-[#0b3d59],
-          .dark-mode-root .text-[#555],
-          .dark-mode-root .text-[#444],
+          .dark-mode-root .text-slate-650,
           .dark-mode-root .text-slate-600,
-          .dark-mode-root .text-gray-600 {
+          .dark-mode-root .text-gray-600,
+          .dark-mode-root [class*="text-gray-600"],
+          .dark-mode-root [class*="text-slate-600"],
+          .dark-mode-root [class*="text-gray-500"],
+          .dark-mode-root [class*="text-slate-500"] {
             color: #cbd5e1 !important;
           }
           .dark-mode-root .text-gray-500,
           .dark-mode-root .text-slate-500,
-          .dark-mode-root .text-gray-400 {
+          .dark-mode-root .text-gray-400,
+          .dark-mode-root [class*="text-gray-400"],
+          .dark-mode-root [class*="text-slate-400"] {
             color: #94a3b8 !important;
           }
           /* Custom borders */
@@ -298,11 +301,12 @@ export default function App() {
           .dark-mode-root .border-gray-300,
           .dark-mode-root .border-slate-200,
           .dark-mode-root .border-emerald-100,
-          .dark-mode-root .border-\[\#e9ecef\] {
+          .dark-mode-root .border-\\\\[\\\\#e9ecef\\\\] {
             border-color: #1b2a21 !important;
           }
           /* Special section headers and widgets */
           .dark-mode-root section,
+          .dark-mode-root div[id="home"],
           .dark-mode-root div[id="mapa"],
           .dark-mode-root div[id="relatar"],
           .dark-mode-root div[id="propor"],
@@ -340,13 +344,16 @@ export default function App() {
             background-color: rgba(245, 158, 11, 0.12) !important;
             color: #fbbf24 !important;
           }
-          .dark-mode-root .bg-[#1b4332]\/5 {
+          .dark-mode-root .bg-\\\\[\\\\#1b4332\\\\]\\\\/5 {
             background-color: rgba(52, 211, 153, 0.06) !important;
           }
-          .dark-mode-root .bg-[#0b3d59]\/5 {
+          .dark-mode-root .bg-\\\\[\\\\#0b3d59\\\\]\\\\/5 {
             background-color: rgba(56, 189, 248, 0.06) !important;
           }
-          .dark-mode-root p {
+          .dark-mode-root p,
+          .dark-mode-root blockquote,
+          .dark-mode-root cite,
+          .dark-mode-root span:not([class*="bg-[#f28f3b]"]):not([class*="bg-[#1b4332]"]) {
             color: #cbd5e1 !important;
           }
           .dark-mode-root .shadow-lg,
@@ -399,40 +406,39 @@ export default function App() {
         </div>
       )}
 
-      {/* Main Structural Page Flow */}
-      <main className="relative">
+      {/* Main Structural Page Flow - Separate Standalone Views instead of Infinite Scrolling Stack */}
+      <main className={`relative min-h-[65vh] ${activeSection !== 'home' ? 'pt-16 lg:pt-20' : ''}`}>
         
-        {/* 1. Home Section */}
-        <Home onNavigate={setActiveSection} />
-
-        {/* 2. Collaborative Map Section */}
-        <ImpactMap relatos={relatos} />
-
-        {/* 3. Community Feedback Intake Form */}
-        <ReportForm onAddRelato={handleAddRelato} />
-
-        {/* 4. Solution Proposer Intake Form */}
-        <SolutionForm onAddProposta={handleAddProposta} />
-
-        {/* 5. Executive Dashboard */}
-        <DashboardESG relatos={relatos} propostas={propostas} currentUser={currentUser} />
-
-        {/* 6. Active Solutions Bank */}
-        <SolutionBank solucoes={todasSolucoes} />
-
-        {/* 6.5 Private restricted Area (Minha Área) */}
-        <MyRestrictedArea
-          currentUser={currentUser}
-          relatos={relatos}
-          propostas={propostas}
-          onUpdateRelato={handleUpdateRelato}
-          onDeleteRelato={handleDeleteRelato}
-          onUpdateProposta={handleUpdateProposta}
-          onDeleteProposta={handleDeleteProposta}
-        />
-
-        {/* 7. About Corporate Integrity */}
-        <AboutSection />
+        {/* Render only active topic as a separate screen/view */}
+        {activeSection === 'home' && <Home onNavigate={setActiveSection} />}
+        
+        {activeSection === 'mapa' && <ImpactMap relatos={relatos} />}
+        
+        {activeSection === 'relatar' && <ReportForm onAddRelato={handleAddRelato} />}
+        
+        {activeSection === 'propor' && <SolutionForm onAddProposta={handleAddProposta} />}
+        
+        {activeSection === 'dores' && <CommunityPains />}
+        
+        {activeSection === 'dashboard' && <DashboardESG relatos={relatos} propostas={propostas} currentUser={currentUser} />}
+        
+        {activeSection === 'banco' && <SolutionBank solucoes={todasSolucoes} />}
+        
+        {activeSection === 'restrito' && (
+          <MyRestrictedArea
+            currentUser={currentUser}
+            relatos={relatos}
+            propostas={propostas}
+            onUpdateRelato={handleUpdateRelato}
+            onDeleteRelato={handleDeleteRelato}
+            onUpdateProposta={handleUpdateProposta}
+            onDeleteProposta={handleDeleteProposta}
+          />
+        )}
+        
+        {activeSection === 'sobre' && <AboutSection />}
+        
+        {activeSection === 'pitch' && <PitchPresentation />}
 
       </main>
 
@@ -447,6 +453,7 @@ export default function App() {
         onDyslexiaFontChange={setDyslexiaFont}
         onReadingGuideChange={setReadingGuide}
         onSpeechSynthesisChange={setSpeechSynthesisEnabled}
+        onNavigate={setActiveSection}
       />
 
       {/* Authentication Popup Modal */}
@@ -460,13 +467,16 @@ export default function App() {
       {showBackToTop && (
         <button
           onClick={handleScrollToTop}
-          className="fixed right-6 bottom-8 z-55 p-3.5 bg-[#f28f3b] hover:bg-[#de7c2a] text-slate-950 hover:text-white rounded-full shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center border-2 border-white/20 active:scale-95 cursor-pointer"
+          className="fixed right-6 bottom-6 z-55 p-3.5 bg-[#f28f3b] hover:bg-[#de7c2a] text-slate-950 hover:text-white rounded-full shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center border-2 border-white/20 active:scale-95 cursor-pointer"
           aria-label="Voltar para o topo"
           title="Voltar para o topo"
         >
           <ArrowUp className="h-5 w-5" />
         </button>
       )}
+
+      {/* Onboarding Interactive walkthrough Tour */}
+      <OnboardingTour activeSection={activeSection} onNavigate={setActiveSection} />
 
     </div>
   );

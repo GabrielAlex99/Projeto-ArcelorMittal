@@ -16,6 +16,7 @@ export default function SolutionForm({ onAddProposta }: SolutionFormProps) {
   const [prazo, setPrazo] = useState('6 meses');
   const [impacto, setImpacto] = useState('');
   const [viabilidade, setViabilidade] = useState<'Baixa' | 'Média' | 'Alta'>('Alta');
+  const [lgpdConsent, setLgpdConsent] = useState(false);
 
   const [submitted, setSubmitted] = useState(false);
   const [errorMess, setErrorMess] = useState('');
@@ -34,6 +35,11 @@ export default function SolutionForm({ onAddProposta }: SolutionFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!lgpdConsent) {
+      setErrorMess('De acordo com a LGPD, você deve aceitar os termos de consentimento para poder submeter ideias ou identificar autoria ambiental.');
+      return;
+    }
 
     if (!titulo.trim()) {
       setErrorMess('Por favor, dê um título descritivo para sua proposta.');
@@ -81,6 +87,7 @@ export default function SolutionForm({ onAddProposta }: SolutionFormProps) {
     setProblemaRelacionado('');
     setDescricao('');
     setImpacto('');
+    setLgpdConsent(false);
     setSubmitted(false);
   };
 
@@ -317,6 +324,22 @@ export default function SolutionForm({ onAddProposta }: SolutionFormProps) {
                   placeholder="Ex: Mitigação das enchentes urbanas nas residências marginais através da retenção natural do solo do jardim."
                   className="w-full px-4 py-3 rounded-xl bg-white border border-[#e9ecef] text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-[#1b4332] text-sm transition-colors resize-none leading-relaxed shadow-xs"
                 />
+              </div>
+
+              {/* LGPD Clause */}
+              <div className="bg-[#1b4332]/5 border border-[#1b4332]/10 rounded-2xl p-4.5 text-left text-xs text-gray-650 space-y-3 shadow-xs font-normal">
+                <div className="flex items-start space-x-2.5">
+                  <input
+                    id="checkbox-lgpd-proposta"
+                    type="checkbox"
+                    checked={lgpdConsent}
+                    onChange={(e) => setLgpdConsent(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-[#1b4332] focus:ring-[#1b4332]"
+                  />
+                  <label htmlFor="checkbox-lgpd-proposta" className="leading-relaxed select-none cursor-pointer text-gray-750">
+                    <strong className="text-[#1b4332] font-semibold">Consentimento LGPD:</strong> Estou ciente e concordo que os dados inseridos nesta proposta (incluindo o meu nome, pseudônimo ou o nome da instituição que represento) sejam arquivados e tratados em total conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/18) com a finalidade exclusiva de análise de viabilidade, divulgação pública no Banco de Soluções e elaboração de estudos socioambientais colaborativos.
+                  </label>
+                </div>
               </div>
 
               {/* Submit trigger */}

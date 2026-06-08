@@ -8,10 +8,7 @@ interface HomeProps {
 export default function Home({ onNavigate }: HomeProps) {
   const handleAction = (id: string) => {
     onNavigate(id);
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -40,8 +37,9 @@ export default function Home({ onNavigate }: HomeProps) {
             </p>
 
             {/* Quick action buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row gap-4 pt-2" id="tour-hero-actions">
               <button
+                id="tour-btn-relatar"
                 onClick={() => handleAction('relatar')}
                 className="px-6 py-3.5 bg-[#0b3d59] hover:bg-[#072a42] text-white font-semibold rounded-xl flex items-center justify-center space-x-2 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-cyan-950/10"
               >
@@ -50,6 +48,7 @@ export default function Home({ onNavigate }: HomeProps) {
               </button>
               
               <button
+                id="tour-btn-mapa"
                 onClick={() => handleAction('mapa')}
                 className="px-6 py-3.5 bg-[#1b4332] hover:bg-[#133024] text-white font-semibold rounded-xl flex items-center justify-center space-x-2 border border-[#2d5c48] transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 shadow-md"
               >
@@ -58,6 +57,7 @@ export default function Home({ onNavigate }: HomeProps) {
               </button>
 
               <button
+                id="tour-btn-propor"
                 onClick={() => handleAction('propor')}
                 className="px-6 py-3.5 bg-white hover:bg-gray-50 text-[#0b3d59] font-semibold rounded-xl flex items-center justify-center space-x-2 border border-[#0b3d59]/30 transition-all duration-200"
               >

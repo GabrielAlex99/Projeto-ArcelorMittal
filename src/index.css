@@ -51,6 +51,7 @@ html.dark body, .dark-mode-root body, .dark-mode-root {
 .dark-mode-root section, 
 .dark-mode-root main,
 .dark-mode-root #root-viewport,
+.dark-mode-root #home,
 .dark-mode-root #mapa,
 .dark-mode-root #relatar,
 .dark-mode-root #propor,
@@ -63,7 +64,7 @@ html.dark body, .dark-mode-root body, .dark-mode-root {
   color: #f1f5f9 !important;
 }
 
-/* Modal and card boxes in dark mode */
+/* Modal and card boxes in dark mode - robust attribute selection */
 .dark-mode-root .bg-white,
 .dark-mode-root .bg-slate-50,
 .dark-mode-root .bg-gray-50,
@@ -73,18 +74,30 @@ html.dark body, .dark-mode-root body, .dark-mode-root {
 .dark-mode-root .bg-\[\#eef2f0\],
 .dark-mode-root .bg-emerald-50\/40,
 .dark-mode-root .bg-emerald-50\/20,
-.dark-mode-root .bg-[#f5f7f6] {
+.dark-mode-root [class*="bg-white"],
+.dark-mode-root [class*="bg-slate-50"],
+.dark-mode-root [class*="bg-gray-50"],
+.dark-mode-root [class*="bg-\\[\\#f5f7f6\\]"],
+.dark-mode-root [class*="bg-\\[\\#eef2f0\\]"] {
   background-color: #0e1712 !important;
   background-image: none !important;
   color: #f1f5f9 !important;
+}
+
+/* Also strip off any gradient backgrounds in dark mode and replace with dark bg */
+.dark-mode-root [class*="bg-gradient-to"] {
+  background-image: none !important;
+  background-color: #080d0a !important;
 }
 
 /* Text color fixes for dark mode */
 .dark-mode-root .text-gray-950,
 .dark-mode-root .text-gray-900,
 .dark-mode-root .text-slate-900,
+.dark-mode-root .text-gray-805,
 .dark-mode-root .text-gray-800,
 .dark-mode-root .text-slate-800,
+.dark-mode-root .text-gray-750,
 .dark-mode-root .text-gray-700,
 .dark-mode-root .text-slate-700,
 .dark-mode-root .text-slate-650,
@@ -94,20 +107,46 @@ html.dark body, .dark-mode-root body, .dark-mode-root {
 .dark-mode-root .text-\[\#0b3d59\],
 .dark-mode-root .text-\[\#2d3436\],
 .dark-mode-root .text-\[\#444\],
-.dark-mode-root .text-\[\#555\] {
+.dark-mode-root .text-\[\#555\],
+.dark-mode-root [class*="text-\\[\\#1b4332\\]"],
+.dark-mode-root [class*="text-\\[\\#0b3d59\\]"],
+.dark-mode-root [class*="text-\\[\\#2d3436\\]"],
+.dark-mode-root [class*="text-gray-950"],
+.dark-mode-root [class*="text-gray-900"],
+.dark-mode-root [class*="text-slate-900"],
+.dark-mode-root [class*="text-gray-850"],
+.dark-mode-root [class*="text-gray-800"],
+.dark-mode-root [class*="text-slate-800"],
+.dark-mode-root [class*="text-gray-700"],
+.dark-mode-root [class*="text-slate-700"] {
   color: #f1f5f9 !important;
 }
 
+.dark-mode-root .text-gray-650,
 .dark-mode-root .text-gray-600,
 .dark-mode-root .text-slate-600,
 .dark-mode-root .text-gray-500,
-.dark-mode-root .text-slate-500 {
+.dark-mode-root .text-slate-500,
+.dark-mode-root [class*="text-gray-600"],
+.dark-mode-root [class*="text-slate-600"],
+.dark-mode-root [class*="text-gray-500"],
+.dark-mode-root [class*="text-slate-500"] {
   color: #cbd5e1 !important;
 }
 
 .dark-mode-root .text-gray-400,
-.dark-mode-root .text-slate-400 {
+.dark-mode-root .text-slate-400,
+.dark-mode-root [class*="text-gray-400"],
+.dark-mode-root [class*="text-slate-400"] {
   color: #94a3b8 !important;
+}
+
+/* General readability catch-all inside any dark mode cards or components */
+.dark-mode-root p,
+.dark-mode-root blockquote,
+.dark-mode-root cite,
+.dark-mode-root span:not([class*="bg-[#f28f3b]"]):not([class*="bg-[#1b4332]"]) {
+  color: #cbd5e1 !important;
 }
 
 /* Borders in dark mode */
@@ -240,4 +279,18 @@ html.dark body, .dark-mode-root body, .dark-mode-root {
 .animate-fade-in {
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Ensure the executive pitch heading has perfect contrast in both themes */
+#pitch-presentation-root h2,
+#pitch-presentation-root h2 span {
+  color: #1b4332 !important;
+}
+
+html.dark #pitch-presentation-root h2,
+html.dark #pitch-presentation-root h2 span,
+.dark-mode-root #pitch-presentation-root h2,
+.dark-mode-root #pitch-presentation-root h2 span {
+  color: #ffffff !important;
+}
+
 
