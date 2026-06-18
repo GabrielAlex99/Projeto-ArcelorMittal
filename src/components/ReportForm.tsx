@@ -25,6 +25,7 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [cepError, setCepError] = useState('');
+  const [cepSuccessFeed, setCepSuccessFeed] = useState('');
   const [errorMess, setErrorMess] = useState('');
 
   const bairrosSugeridos = [
@@ -37,6 +38,7 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
 
   const handleCepLookup = async (cepValue: string) => {
     setCep(cepValue);
+    setCepSuccessFeed('');
     const cleaned = cepValue.replace(/\D/g, '');
     if (cleaned.length !== 8) {
       setCepError('');
@@ -54,16 +56,21 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
           setCidade(data.localidade || '');
           setUf(data.uf || '');
           setCepError('');
-          console.log(`Auto-filled address via ViaCEP: ${data.bairro}, ${data.localidade} - ${data.uf}`);
+          const formattedCep = cleaned.substring(0, 5) + '-' + cleaned.substring(5, 8);
+          setCep(formattedCep);
+          setCepSuccessFeed(`✓ Endereço consistente e integrado: ${data.localidade} (${data.uf})`);
         } else {
-          setCepError('CEP não localizado nas bases de dados. Preencha manualmente.');
+          setCepError('CEP com formato estrutural correto, porém inexistente na base postal de logradouros.');
+          setCepSuccessFeed('');
         }
       } else {
-        setCepError('Serviço de CEP temporariamente indisponível.');
+        setCepError('Serviço ViaCEP indisponível para consulta federativa no momento.');
+        setCepSuccessFeed('');
       }
     } catch (err) {
       console.error('Error during ViaCEP fetching:', err);
-      setCepError('Falha ao conectar com o serviço de CEP.');
+      setCepError('Falha ao conectar com a base pública de verificação de endereços.');
+      setCepSuccessFeed('');
     } finally {
       setIsFetchingCep(false);
     }
@@ -353,6 +360,7 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
                             setCidade(sugar.cidade);
                             setUf(sugar.uf);
                             setCepError('');
+                            setCepSuccessFeed('✓ Endereço consistente (zona integrada pré-carregada)');
                           }}
                           className="px-2.5 py-1 bg-gray-50 border border-gray-200 hover:border-[#1b4332] hover:bg-[#1b4332]/5 text-[10.5px] rounded-lg text-gray-600 transition-all font-semibold cursor-pointer"
                         >
@@ -364,7 +372,11 @@ export default function ReportForm({ onAddRelato }: ReportFormProps) {
                 </div>
 
                 {cepError && (
-                  <p className="text-[11px] text-rose-600 font-bold text-left bg-rose-50 border border-rose-100 p-2 rounded-lg animate-fade-in">{cepError}</p>
+                  <p className="text-[11px] text-rose-600 font-bold text-left bg-rose-50 border border-rose-100 p-2.5 rounded-lg animate-fade-in">{cepError}</p>
+                )}
+
+                {cepSuccessFeed && (
+                  <p className="text-[11px] text-emerald-700 font-bold text-left bg-emerald-50 border border-emerald-100 p-2.5 rounded-lg animate-fade-in">{cepSuccessFeed}</p>
                 )}
 
                 {/* Filled Address Details */}

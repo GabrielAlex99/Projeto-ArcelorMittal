@@ -247,6 +247,23 @@ export default function AccessibilityMenu({
     { key: 'Enter / Espaço', desc: 'Ativar botões e links focados' }
   ];
 
+  const renderSwitch = (
+    checked: boolean,
+    onClick: () => void,
+    ariaLabel: string
+  ) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`access-switch ${checked ? 'access-switch--on' : 'access-switch--off'}`}
+      role="switch"
+      aria-checked={checked}
+      aria-label={ariaLabel}
+    >
+      <span className="access-switch__thumb" aria-hidden="true" />
+    </button>
+  );
+
   return (
     <>
       {/* 1. Unobtrusive Floating Trigger Badge */}
@@ -398,19 +415,7 @@ export default function AccessibilityMenu({
                 <span className="text-xs font-bold text-gray-700 uppercase tracking-wider block">Leitor de Tela de Voz</span>
                 <span className="text-[10px] text-gray-500 block">Sintetiza em áudio os textos ao focar</span>
               </div>
-              <button
-                onClick={toggleSpeechSynthesis}
-                className={`w-12 h-6.5 p-1 rounded-full transition-colors ${
-                  speechSynthesisEnabled ? 'bg-emerald-600' : 'bg-gray-250'
-                }`}
-                role="switch"
-                aria-checked={speechSynthesisEnabled}
-                aria-label="Ativar leitura por síntese de voz"
-              >
-                <div className={`bg-white w-4.5 h-4.5 rounded-full shadow-md transform transition-all ${
-                  speechSynthesisEnabled ? 'translate-x-5.5' : 'translate-x-0'
-                }`} />
-              </button>
+              {renderSwitch(speechSynthesisEnabled, toggleSpeechSynthesis, 'Ativar leitura por síntese de voz')}
             </div>
 
             {/* Switch: Underline link decorations */}
@@ -419,19 +424,7 @@ export default function AccessibilityMenu({
                 <span className="text-xs font-bold text-gray-700 uppercase tracking-wider block">Destacar Links do Portal</span>
                 <span className="text-[10px] text-gray-500 block">Sublinha com clareza botões e âncoras</span>
               </div>
-              <button
-                onClick={toggleUnderlines}
-                className={`w-12 h-6.5 p-1 rounded-full transition-colors ${
-                  underlineLinks ? 'bg-emerald-600' : 'bg-gray-250'
-                }`}
-                role="switch"
-                aria-checked={underlineLinks}
-                aria-label="Sublinhar links"
-              >
-                <div className={`bg-white w-4.5 h-4.5 rounded-full shadow-md transform transition-all ${
-                  underlineLinks ? 'translate-x-5.5' : 'translate-x-0'
-                }`} />
-              </button>
+              {renderSwitch(underlineLinks, toggleUnderlines, 'Sublinhar links')}
             </div>
 
             {/* Switch: Dyslexia readable spacing */}
@@ -440,19 +433,7 @@ export default function AccessibilityMenu({
                 <span className="text-xs font-bold text-gray-700 uppercase tracking-wider block">Legibilidade Simples</span>
                 <span className="text-[10px] text-gray-500 block">Aumenta o espaçamento das letras</span>
               </div>
-              <button
-                onClick={toggleDyslexia}
-                className={`w-12 h-6.5 p-1 rounded-full transition-colors ${
-                  dyslexiaFont ? 'bg-emerald-600' : 'bg-gray-250'
-                }`}
-                role="switch"
-                aria-checked={dyslexiaFont}
-                aria-label="Ativar fonte e espaçamento de fácil leitura"
-              >
-                <div className={`bg-white w-4.5 h-4.5 rounded-full shadow-md transform transition-all ${
-                  dyslexiaFont ? 'translate-x-5.5' : 'translate-x-0'
-                }`} />
-              </button>
+              {renderSwitch(dyslexiaFont, toggleDyslexia, 'Ativar fonte e espaçamento de fácil leitura')}
             </div>
 
             {/* Switch: Reading guide focus bar */}
@@ -461,19 +442,7 @@ export default function AccessibilityMenu({
                 <span className="text-xs font-bold text-gray-700 uppercase tracking-wider block">Guia Dinâmico de Leitura</span>
                 <span className="text-[10px] text-gray-500 block">Régua horizontal de apoio visual</span>
               </div>
-              <button
-                onClick={toggleReadingGuide}
-                className={`w-12 h-6.5 p-1 rounded-full transition-colors ${
-                  readingGuide ? 'bg-emerald-600' : 'bg-gray-250'
-                }`}
-                role="switch"
-                aria-checked={readingGuide}
-                aria-label="Habilitar régua visual de leitura"
-              >
-                <div className={`bg-white w-4.5 h-4.5 rounded-full shadow-md transform transition-all ${
-                  readingGuide ? 'translate-x-5.5' : 'translate-x-0'
-                }`} />
-              </button>
+              {renderSwitch(readingGuide, toggleReadingGuide, 'Habilitar régua visual de leitura')}
             </div>
 
             {/* Section: Keyboard shortcut helper */}

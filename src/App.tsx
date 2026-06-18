@@ -14,11 +14,94 @@ import CodeViewer from './components/CodeViewer';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
 import AccessibilityMenu from './components/AccessibilityMenu';
-import PitchPresentation from './components/PitchPresentation';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp, FileDown, Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Relato, Proposta, SolucaoPadrao, PlataformaUser } from './types';
 import { initialRelatos, initialPropostas, solucoesPadrao } from './data/initialData';
+import { jsPDF } from 'jspdf';
+import { realImpactStats } from './data/impactStats';
+import { documentedRacismCases } from './data/realCases';
+import { realSolutions } from './data/solutionBank';
+
+
+type PitchStep = {
+  id: string;
+  title: string;
+  cue: string;
+};
+
+const PITCH_STEPS: PitchStep[] = [
+  {
+    id: 'home',
+    title: 'Abertura',
+    cue: 'A voz da comunidade vira dado. O dado vira ação.'
+  },
+  {
+    id: 'dores',
+    title: 'Problema e evidências',
+    cue: 'Dados oficiais e casos documentados mostram por que a escuta territorial precisa virar rotina.'
+  },
+  {
+    id: 'mapa',
+    title: 'Como a EcoVoz organiza relatos',
+    cue: 'O território passa a ser visualizado por categoria, prioridade, imagem e status de encaminhamento.'
+  },
+  {
+    id: 'dashboard',
+    title: 'Indicadores para decisão',
+    cue: 'O painel transforma registros demonstrativos e fontes públicas em leitura executiva.'
+  },
+  {
+    id: 'banco',
+    title: 'Valor para empresa e soluções',
+    cue: 'A EcoVoz apoia reputação, priorização ESG, prevenção de risco e resposta comunitária.'
+  },
+  {
+    id: 'sobre',
+    title: 'Fechamento e alinhamento aos ODS',
+    cue: 'O projeto conecta tecnologia, sustentabilidade e compromisso socioambiental verificável.'
+  }
+];
+
+interface PitchModeBarProps {
+  currentStep: PitchStep;
+  currentIndex: number;
+  total: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onExit: () => void;
+  onExportPdf: () => void;
+}
+
+function PitchModeBar({ currentStep, currentIndex, total, onPrev, onNext, onExit, onExportPdf }: PitchModeBarProps) {
+  return (
+    <div className="fixed left-0 right-0 top-0 z-[70] border-b border-[#DDE8D8] bg-white/95 shadow-lg backdrop-blur-md print:hidden">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+        <div className="min-w-0">
+          <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[#F28C28]">Modo apresentação · {currentIndex + 1}/{total}</span>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h2 className="text-base font-black text-[#123524] sm:text-lg">{currentStep.title}</h2>
+            <p className="text-xs font-medium text-[#4B5F55] sm:text-sm">{currentStep.cue}</p>
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <button type="button" onClick={onPrev} className="inline-flex h-9 items-center gap-1 rounded-full border border-[#DDE8D8] bg-white px-3 text-xs font-black text-[#123524] transition hover:bg-[#F4F7F2]" aria-label="Etapa anterior do pitch">
+            <ChevronLeft className="h-4 w-4" /> Anterior
+          </button>
+          <button type="button" onClick={onNext} className="inline-flex h-9 items-center gap-1 rounded-full bg-[#123524] px-3 text-xs font-black text-white transition hover:bg-[#2F6B4F]" aria-label="Próxima etapa do pitch">
+            Próximo <ChevronRight className="h-4 w-4" />
+          </button>
+          <button type="button" onClick={onExportPdf} className="hidden h-9 items-center gap-1 rounded-full border border-[#F6C56B] bg-[#FFF8EF] px-3 text-xs font-black text-[#C44A1C] transition hover:bg-[#FFF3E0] sm:inline-flex" aria-label="Exportar relatório em PDF">
+            <FileDown className="h-4 w-4" /> PDF
+          </button>
+          <button type="button" onClick={onExit} className="inline-flex h-9 items-center gap-1 rounded-full border border-[#DDE8D8] bg-white px-3 text-xs font-black text-[#4B5F55] transition hover:bg-[#F4F7F2]" aria-label="Sair do modo apresentação">
+            <X className="h-4 w-4" /> Sair
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   // relatos & propostas core arrays
@@ -26,6 +109,7 @@ export default function App() {
   const [propostas, setPropostas] = useState<Proposta[]>(initialPropostas);
   const [activeSection, setActiveSection] = useState('home');
   const [showCodeViewer, setShowCodeViewer] = useState(false);
+  const [isPitchMode, setIsPitchMode] = useState(false);
 
   // Accessibility States
   const [contrastMode, setContrastMode] = useState<'normal' | 'high-contrast' | 'grayscale'>('normal');
@@ -36,14 +120,7 @@ export default function App() {
   const [speechSynthesisEnabled, setSpeechSynthesisEnabled] = useState(false);
 
   // Dark Mode & Back to Top States
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    try {
-      const saved = localStorage.getItem('esg_plataforma_dark_mode');
-      return saved === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
@@ -75,15 +152,139 @@ export default function App() {
   }, []);
 
   const handleToggleDarkMode = () => {
-    setIsDarkMode(prev => {
-      const next = !prev;
-      localStorage.setItem('esg_plataforma_dark_mode', String(next));
-      return next;
-    });
+    // Tema escuro desativado neste protótipo para manter contraste e identidade visual institucional.
+    setIsDarkMode(false);
+    localStorage.setItem('esg_plataforma_dark_mode', 'false');
   };
 
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const pitchIndex = Math.max(0, PITCH_STEPS.findIndex((step) => step.id === activeSection));
+  const currentPitchStep = PITCH_STEPS[pitchIndex] || PITCH_STEPS[0];
+
+  const handleStartPitchMode = () => {
+    setShowCodeViewer(false);
+    setIsPitchMode(true);
+    setActiveSection('home');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleExitPitchMode = () => {
+    setIsPitchMode(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePitchPrev = () => {
+    const prevIndex = (pitchIndex - 1 + PITCH_STEPS.length) % PITCH_STEPS.length;
+    setActiveSection(PITCH_STEPS[prevIndex].id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePitchNext = () => {
+    const nextIndex = (pitchIndex + 1) % PITCH_STEPS.length;
+    setActiveSection(PITCH_STEPS[nextIndex].id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleExportPitchPdf = () => {
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 48;
+    let y = 52;
+
+    const addPageIfNeeded = (height = 70) => {
+      if (y + height > pageHeight - margin) {
+        doc.addPage();
+        y = 52;
+      }
+    };
+
+    const addWrappedText = (text: string, size = 10, color: [number, number, number] = [22, 35, 28], maxWidth = pageWidth - margin * 2, lineGap = 14) => {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(size);
+      doc.setTextColor(...color);
+      const lines = doc.splitTextToSize(text, maxWidth);
+      addPageIfNeeded(lines.length * lineGap + 6);
+      doc.text(lines, margin, y);
+      y += lines.length * lineGap + 8;
+    };
+
+    const addSectionTitle = (title: string) => {
+      addPageIfNeeded(46);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(15);
+      doc.setTextColor(18, 53, 36);
+      doc.text(title, margin, y);
+      y += 22;
+      doc.setDrawColor(221, 232, 216);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 18;
+    };
+
+    doc.setFillColor(18, 53, 36);
+    doc.rect(0, 0, pageWidth, 120, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(30);
+    doc.text('EcoVoz', margin, 58);
+    doc.setFontSize(14);
+    doc.text('A voz da comunidade vira dado. O dado vira ação.', margin, 86);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text('Relatório sintético para pitch e discussão com stakeholders', margin, 106);
+    y = 154;
+
+    addSectionTitle('1. Por que o projeto importa');
+    addWrappedText('A EcoVoz propõe uma plataforma socioambiental de escuta, mapeamento e priorização de ações para territórios vulnerabilizados. A proposta separa dados oficiais, casos documentados e demonstrações do protótipo para manter transparência e credibilidade.');
+
+    addSectionTitle('2. Indicadores oficiais usados como base');
+    realImpactStats.forEach((stat) => {
+      addPageIfNeeded(80);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.setTextColor(196, 74, 28);
+      doc.text(`${stat.displayValue} · ${stat.category}`, margin, y);
+      y += 17;
+      doc.setTextColor(18, 53, 36);
+      doc.text(stat.metricName, margin, y);
+      y += 15;
+      addWrappedText(`${stat.description} Fonte: ${stat.sourceName}.`, 9, [75, 95, 85]);
+      y += 4;
+    });
+
+    addSectionTitle('3. Casos documentados que reforçam o problema');
+    documentedRacismCases.forEach((item) => {
+      addPageIfNeeded(86);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(18, 53, 36);
+      doc.text(`${item.location} — ${item.title}`, margin, y);
+      y += 17;
+      addWrappedText(`${item.context} Impacto humano: ${item.humanImpact || item.impact || ''} Fonte: ${item.sourceName}.`, 9, [75, 95, 85]);
+    });
+
+    addSectionTitle('4. Valor para stakeholders');
+    ['Reduzir risco reputacional com escuta e resposta antecipadas.', 'Priorizar investimento social com base em evidências territoriais.', 'Organizar relatos dispersos em indicadores, mapa e histórico.', 'Apoiar compromissos ESG com rastreabilidade e transparência.', 'Fortalecer relação comunitária com retorno visível das ações.'].forEach((bullet) => addWrappedText(`• ${bullet}`, 10));
+
+    addSectionTitle('5. Banco inicial de soluções');
+    realSolutions.slice(0, 4).forEach((solution) => {
+      addPageIfNeeded(72);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(18, 53, 36);
+      doc.text(solution.title, margin, y);
+      y += 15;
+      addWrappedText(`${solution.description} Impacto esperado: ${solution.expectedImpact}. Fonte: ${solution.sourceName}.`, 9, [75, 95, 85]);
+    });
+
+    addSectionTitle('6. Observação sobre a calculadora');
+    addWrappedText('A calculadora do protótipo é demonstrativa. Ela usa a lógica: relatos críticos por mês × custo médio estimado de resposta tardia × 12 meses × redução estimada de risco. Em uma implantação real, os parâmetros devem ser substituídos por dados internos da empresa e histórico de atendimento.', 10);
+
+    doc.setProperties({ title: 'EcoVoz - Relatório sintético de pitch', subject: 'Plataforma socioambiental de escuta e mapeamento', author: 'EcoVoz' });
+    doc.save('EcoVoz_relatorio_pitch.pdf');
   };
 
   // Authentication State
@@ -191,7 +392,7 @@ export default function App() {
 
   const rootClasses = [
     "min-h-screen transition-all duration-300",
-    contrastMode === 'high-contrast' ? "high-contrast-root bg-slate-950 text-yellow-300" : (isDarkMode ? "dark dark-mode-root bg-[#080d0a] text-slate-100" : "bg-[#f5f7f6] text-[#2d3436]"),
+    contrastMode === 'high-contrast' ? "high-contrast-root bg-slate-950 text-yellow-300" : (isDarkMode ? "dark dark-mode-root bg-[#080d0a] text-slate-100" : "bg-[#fafcfa] text-[#2d3436]"),
     contrastMode === 'grayscale' ? "grayscale-root" : "relative",
     underlineLinks ? "underline-links-root" : "",
     dyslexiaFont ? "dyslexia-font-root" : ""
@@ -241,7 +442,7 @@ export default function App() {
             fill: none !important;
           }
         ` : ''}
-        ${isDarkMode && contrastMode !== 'high-contrast' ? `
+        ${false && isDarkMode && contrastMode !== 'high-contrast' ? `
           /* Main structural dark style overrides */
           .dark-mode-root {
             background-color: #080d0a !important;
@@ -407,6 +608,7 @@ export default function App() {
       `}</style>
       
       {/* Dynamic Header */}
+      {!isPitchMode && (
       <Header 
         activeSection={activeSection} 
         setActiveSection={setActiveSection} 
@@ -417,7 +619,22 @@ export default function App() {
         onOpenAuth={() => setIsAuthModalOpen(true)}
         isDarkMode={isDarkMode}
         onToggleDarkMode={handleToggleDarkMode}
+        onStartPitchMode={handleStartPitchMode}
+        onExportPitchPdf={handleExportPitchPdf}
       />
+      )}
+
+      {isPitchMode && (
+        <PitchModeBar
+          currentStep={currentPitchStep}
+          currentIndex={pitchIndex}
+          total={PITCH_STEPS.length}
+          onPrev={handlePitchPrev}
+          onNext={handlePitchNext}
+          onExit={handleExitPitchMode}
+          onExportPdf={handleExportPitchPdf}
+        />
+      )}
 
       {/* Code Viewer Mode Toggle Area */}
       {showCodeViewer && (
@@ -427,7 +644,7 @@ export default function App() {
       )}
 
       {/* Main Structural Page Flow - Separate Standalone Views instead of Infinite Scrolling Stack */}
-      <main className={`relative min-h-[65vh] ${activeSection !== 'home' ? 'pt-16 lg:pt-20' : ''}`}>
+      <main className={`relative min-h-[65vh] ${isPitchMode ? 'pt-20 lg:pt-24' : activeSection !== 'home' ? 'pt-16 lg:pt-20' : ''}`}>
         
         {/* Render only active topic as a separate screen/view */}
         {activeSection === 'home' && <Home onNavigate={setActiveSection} />}
@@ -457,15 +674,14 @@ export default function App() {
         )}
         
         {activeSection === 'sobre' && <AboutSection />}
-        
-        {activeSection === 'pitch' && <PitchPresentation />}
 
       </main>
 
       {/* Dynamic Footer */}
-      <Footer />
+      {!isPitchMode && <Footer />}
 
       {/* Accessibility Helper floating options menu */}
+      {!isPitchMode && (
       <AccessibilityMenu 
         onContrastChange={setContrastMode}
         onFontSizeChange={setFontSizeScale}
@@ -475,6 +691,7 @@ export default function App() {
         onSpeechSynthesisChange={setSpeechSynthesisEnabled}
         onNavigate={setActiveSection}
       />
+      )}
 
       {/* Authentication Popup Modal */}
       <AuthModal
@@ -484,7 +701,7 @@ export default function App() {
       />
 
       {/* Floating Back to Top Button */}
-      {showBackToTop && (
+      {!isPitchMode && showBackToTop && (
         <button
           onClick={handleScrollToTop}
           className="fixed right-6 bottom-6 z-55 p-3.5 bg-[#f28f3b] hover:bg-[#de7c2a] text-slate-950 hover:text-white rounded-full shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center border-2 border-white/20 active:scale-95 cursor-pointer"
@@ -496,7 +713,7 @@ export default function App() {
       )}
 
       {/* Onboarding Interactive walkthrough Tour */}
-      <OnboardingTour activeSection={activeSection} onNavigate={setActiveSection} />
+      {!isPitchMode && <OnboardingTour activeSection={activeSection} onNavigate={setActiveSection} />}
 
     </div>
   );

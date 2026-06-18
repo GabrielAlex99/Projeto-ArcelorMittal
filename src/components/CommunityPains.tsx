@@ -1,407 +1,407 @@
 import React, { useState } from 'react';
-import { 
-  Heart, 
-  Wind, 
-  Volume2, 
-  Droplet, 
-  AlertCircle, 
-  MessageSquare, 
-  User, 
-  Sparkles, 
-  Activity, 
-  ArrowRight,
-  TrendingUp,
+import {
+  BarChart3,
+  BookOpen,
+  ExternalLink,
+  FileText,
+  Heart,
   MapPin,
-  Calendar,
-  Frown,
-  BadgeAlert
+  MessageSquare,
+  Newspaper,
+  ShieldCheck,
+  Users,
 } from 'lucide-react';
+import { realImpactStats } from '../data/impactStats';
+import { publicEvidenceCases, documentedRacismCases } from '../data/realCases';
 
-interface Depoimento {
+type TabKey = 'indicadores' | 'relatos' | 'evidencias';
+type FiltroRelato = 'Todos' | 'Ar' | 'Água' | 'Ruído';
+
+interface RelatoDemo {
   id: string;
-  nome: string;
-  idade: number;
-  bairro: string;
-  categoria: 'Ar' | 'Água' | 'Ruído' | 'Geral';
+  perfil: string;
+  local: string;
+  categoria: 'Ar' | 'Água' | 'Ruído';
   queixa: string;
-  historia: string;
-  dataTermometro: number; // 0-100 indicating severeness
-  saudeEfeito: string;
-  cotidianoAfetado: string;
+  resumo: string;
+  impacto: string;
+  cotidiano: string;
+  prioridade: 'Alta' | 'Média';
+}
+
+const relatosDemo: RelatoDemo[] = [
+  {
+    id: 'demo-ar-1',
+    perfil: 'Moradora do território, 64 anos',
+    local: 'Santa Cruz - RJ',
+    categoria: 'Ar',
+    queixa: 'Poeira industrial recorrente sobre quintais e roupas',
+    resumo:
+      'Exemplo representativo de relato para demonstrar como a plataforma registra queixas de poeira, fuligem e incômodo respiratório em áreas próximas a polos industriais.',
+    impacto: 'Irritação respiratória e redução do uso de áreas externas da casa.',
+    cotidiano: 'Janelas fechadas por longos períodos, roupas sujas por poeira e necessidade de registrar recorrência do problema.',
+    prioridade: 'Alta',
+  },
+  {
+    id: 'demo-ar-2',
+    perfil: 'Morador do território, 52 anos',
+    local: 'Cubatão - SP',
+    categoria: 'Ar',
+    queixa: 'Odor químico em horários de baixa ventilação',
+    resumo:
+      'Exemplo demonstrativo de denúncia sobre cheiro forte e incômodo em períodos noturnos, útil para testar triagem, mapa e encaminhamento técnico.',
+    impacto: 'Desconforto, tosse e dificuldade de permanência em áreas abertas.',
+    cotidiano: 'O relato ajuda a indicar horários críticos e orientar verificação por órgãos responsáveis.',
+    prioridade: 'Alta',
+  },
+  {
+    id: 'demo-agua-1',
+    perfil: 'Trabalhador da pesca artesanal',
+    local: 'Guarujá - SP',
+    categoria: 'Água',
+    queixa: 'Manchas de óleo e resíduos em canais próximos à comunidade',
+    resumo:
+      'Exemplo visual de como moradores poderiam registrar imagens, localização e descrição de contaminação hídrica percebida no território.',
+    impacto: 'Risco para pesca, lazer e segurança alimentar local.',
+    cotidiano: 'A plataforma organiza a recorrência e fortalece a cobrança por resposta técnica.',
+    prioridade: 'Média',
+  },
+  {
+    id: 'demo-ruido-1',
+    perfil: 'Moradora do território, 38 anos',
+    local: 'Ipatinga - MG',
+    categoria: 'Ruído',
+    queixa: 'Ruídos e vibrações durante a madrugada',
+    resumo:
+      'Exemplo de relato sobre incômodo sonoro e vibração residencial, usado apenas para demonstrar o fluxo de classificação por categoria.',
+    impacto: 'Sono interrompido, estresse e dificuldade de concentração.',
+    cotidiano: 'O registro recorrente pode apoiar análise de horários, áreas mais afetadas e possíveis medidas mitigadoras.',
+    prioridade: 'Média',
+  },
+];
+
+const tabConfig = [
+  { id: 'indicadores' as TabKey, label: 'Indicadores oficiais', icon: BarChart3 },
+  { id: 'relatos' as TabKey, label: 'Relatos demonstrativos', icon: MessageSquare },
+  { id: 'evidencias' as TabKey, label: 'Fontes e evidências', icon: Newspaper },
+];
+
+function Badge({ children, tone = 'green' }: { children: React.ReactNode; tone?: 'green' | 'orange' | 'soft' }) {
+  const classes =
+    tone === 'orange'
+      ? 'bg-[#FFF3E0] text-[#C44A1C] border-[#F6C56B]'
+      : tone === 'soft'
+        ? 'bg-[#F4F7F2] text-[#4B5F55] border-[#DDE8D8]'
+        : 'bg-[#E8F1EA] text-[#123524] border-[#A8CBB1]';
+
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider ${classes}`}>
+      {children}
+    </span>
+  );
 }
 
 export default function CommunityPains() {
-  const [activeFiltro, setActiveFiltro] = useState<'Todos' | 'Ar' | 'Água' | 'Ruído'>('Todos');
-  const [selectedDepoimento, setSelectedDepoimento] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabKey>('indicadores');
+  const [activeFiltro, setActiveFiltro] = useState<FiltroRelato>('Todos');
+  const [selectedRelato, setSelectedRelato] = useState<string>(relatosDemo[0].id);
 
-  const depoimentos: Depoimento[] = [
-    {
-      id: 'dep-1',
-      nome: 'Dona Maria de Lourdes',
-      idade: 64,
-      bairro: 'Jesuítas (Santa Cruz - RJ)',
-      categoria: 'Ar',
-      queixa: 'Poeira cinza e brilhante que cobre o quintal e ataca a asma',
-      historia: 'Todo dia de manhã, varro um pó denso de minério que parece purpurina escura. Minha neta de 4 anos usa bombinha de asma três vezes por semana. No verão, o ar fica tão pesado que arde a garganta só de respirar no quintal. Sentimos que as indústrias lucram enquanto nós pagamos com a saúde dos nossos pulmões.',
-      dataTermometro: 89,
-      saudeEfeito: 'Crises crônicas de bronquite e asma infantil na família.',
-      cotidianoAfetado: 'Não é possível estender roupas no varal; janelas precisam ficar fechadas 24h por dia.'
-    },
-    {
-      id: 'dep-2',
-      nome: 'Seu Sebastião "Tião"',
-      idade: 52,
-      bairro: 'Vila Parisi (Cubatão - SP)',
-      categoria: 'Ar',
-      queixa: 'Odor químico irritante e neblina ácida em dias frios',
-      historia: 'Moro aqui há trinta anos. Embora as indústrias tenham colocado filtros no passado, o cheiro forte de enxofre e amônia volta com tudo durante as madrugadas. Tem noite que a gente acorda tossindo com um gosto metálico na boca. O posto de saúde vive lotado de crianças e idosos com inalação.',
-      dataTermometro: 92,
-      saudeEfeito: 'Irritação ocular severa, garganta inflamada crônica e dores de cabeça.',
-      cotidianoAfetado: 'Impossibilidade de praticar atividades físicas ao ar livre; noites de sono interrompidas.'
-    },
-    {
-      id: 'dep-3',
-      nome: 'Cláudio Santos (Pescador)',
-      idade: 47,
-      bairro: 'Santa Cruz dos Navegantes (Guarujá - SP)',
-      categoria: 'Água',
-      queixa: 'Esgoto sem tratamento desaguando próximo às moradias e praias',
-      historia: 'A maré traz os detritos diretamente para as praias onde as crianças brincam. O peixe diminuiu por causa do óleo das embarcações e da sujeira acumulada do porto. Quem vive da pesca aqui está vendo a água adoecer, e nossa renda indo embora junto com a dignidade de ter uma praia limpa.',
-      dataTermometro: 78,
-      saudeEfeito: 'Surtos recorrentes de dermatite na pele e diarreia infantil.',
-      cotidianoAfetado: 'Pesca artesanal prejudicada; redução drástica da segurança alimentar das famílias tradicionais.'
-    },
-    {
-      id: 'dep-4',
-      nome: 'Rita de Cássia',
-      idade: 38,
-      bairro: 'Bairro Veneza (Ipatinga - MG)',
-      categoria: 'Ruído',
-      queixa: 'Zumbido de motores pesados e tremores residenciais na madrugada',
-      historia: 'O barulho das máquinas da siderúrgica não para. É um som contínuo, tipo um zumbido grave que entra na cabeça da gente e não sai. O pior é de madrugada, quando eles fazem o descarregamento de escória. A casa inteira estremece levemente, e as xícaras no armário tilintam. Meu filho autista entra em pânico quase toda semana.',
-      dataTermometro: 85,
-      saudeEfeito: 'Privação severa de sono, ansiedade instalada e estresse auditivo contínuo.',
-      cotidianoAfetado: 'Impossível assistir televisão ou ler um livro em paz; rachaduras constantes no reboco das paredes.'
-    },
-    {
-      id: 'dep-5',
-      nome: 'Ezequiel da Silva',
-      idade: 71,
-      bairro: 'Zona Residencial (Candiota - RS)',
-      categoria: 'Ar',
-      queixa: 'Fumaça escura de carvão e fuligem ácida nas plantações',
-      historia: 'As folhas de couve e o milharal no meu quintal nascem manchados de cinza. A água da chuva que a gente capta vem turva. A queima do carvão na usina causa uma chuva ácida de leve que destrói a horta da vizinhança. A gente plantava para comer, hoje temos medo de comer o que a terra dá.',
-      dataTermometro: 82,
-      saudeEfeito: 'Problemas de pele, ardência constante nos olhos e dores nas articulações.',
-      cotidianoAfetado: 'Perda total do sustento de subsistência por pequenas hortas domésticas.'
-    }
-  ];
+  const filteredRelatos = activeFiltro === 'Todos' ? relatosDemo : relatosDemo.filter((relato) => relato.categoria === activeFiltro);
+  const currentRelato = filteredRelatos.find((relato) => relato.id === selectedRelato) || filteredRelatos[0] || relatosDemo[0];
 
-  const doresEstatisticas = [
-    { title: "Insônia e Distúrbios de Sono", rate: "76%", badge: "Ruído Noturno", color: "rose", desc: "Moradores vizinhos às indústrias relatam noites perdidas pelo ruído grave constante." },
-    { title: "Inalação de Emergência", rate: "4.2x", badge: "Poluição do Ar", color: "red", desc: "Crianças em áreas com fuligem de minério usam nebulizadores quatro vezes mais que a média nacional." },
-    { title: "Contaminação Ocular / Conjuntivite", rate: "58%", badge: "Fuligem Química", color: "amber", desc: "Casos frequentes de ardor e conjuntivite crônica devido a micropartículas suspensas." },
-    { title: "Rachaduras Estruturais", rate: "1 em cada 3 casas", badge: "Vibração de Solo", color: "orange", desc: "Danos residenciais acumulados devidos ao tráfego pesado de carretas na região periférica." }
-  ];
-
-  const palavrasDeTristeza = [
-    { word: "Sono Interrompido", level: "Crítico" },
-    { word: "Medo de Respirar", level: "Crítico" },
-    { word: "Bombinha de Asma", level: "Frequente" },
-    { word: "Garganta Seca", level: "Diário" },
-    { word: "Vidros Vibrando", level: "Noturno" },
-    { word: "Pó Preto nas Mãos", level: "Diário" },
-    { word: "Água Amarelada", level: "Urgente" },
-    { word: "Zumbido na Cabeça", level: "Constante" },
-    { word: "Falta de Quintal Limpo", level: "Crônico" },
-  ];
-
-  const filteredDepoimentos = activeFiltro === 'Todos' 
-    ? depoimentos 
-    : depoimentos.filter(d => d.categoria === activeFiltro);
+  const filters: FiltroRelato[] = ['Todos', 'Ar', 'Água', 'Ruído'];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-left animate-fade-in">
-      
-      {/* Intro Header */}
-      <div className="mb-12 border-b border-gray-100 pb-8">
-        <span className="text-xs font-black text-rose-600 tracking-wider uppercase bg-rose-50 px-3 py-1 rounded-full inline-block mb-3 animate-pulse">
-          💔 Impacto Real & Humano
-        </span>
-        <h1 className="font-sans font-bold text-3.5xl md:text-4.5xl text-[#1b4332] tracking-tight">
-          Vozes & Dores da Comunidade
-        </h1>
-        <p className="text-gray-650 text-base md:text-lg max-w-3xl mt-2 leading-relaxed">
-          Para além dos relatórios técnicos e planilhas ESG corporativas, existem pessoas de carne e osso sofrendo os efeitos colaterais imediatos da vizinhança industrial. Conheça as narrativas reais, os sentimentos e as dores de quem vivencia esses problemas diariamente.
-        </p>
-      </div>
-
-      {/* Grid: Bento Structure for Pains and Pains Cloud */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-        
-        {/* Statistics of Pains Card */}
-        <div className="bg-gradient-to-br from-rose-50 to-white border border-rose-100 rounded-3.5xl p-6 md:p-8 flex flex-col justify-between shadow-xs lg:col-span-2">
-          <div>
-            <div className="flex items-center space-x-2 text-rose-700 font-bold mb-4">
-              <Activity className="h-5 w-5 text-rose-600" />
-              <span className="text-sm uppercase tracking-wider">Métricas Reais de Desconforto</span>
+    <div id="dores" className="bg-[#F4F7F2] text-[#16231C] py-10 sm:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <section className="bg-white border border-[#DDE8D8] rounded-[28px] p-6 sm:p-8 shadow-sm">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div className="max-w-3xl">
+              <Badge tone="orange">Diagnóstico socioambiental</Badge>
+              <h1 className="mt-4 text-3xl sm:text-4xl font-black tracking-tight text-[#123524]">
+                Impactos no Território
+              </h1>
+              <p className="mt-3 text-sm sm:text-base leading-relaxed text-[#4B5F55]">
+                Dados públicos e exemplos de relatos organizados para demonstrar como o EcoVoz transforma escuta comunitária em evidências, prioridades e encaminhamentos.
+              </p>
             </div>
-            <h2 className="font-sans font-bold text-2xl text-gray-900 tracking-tight mb-2">
-              O Termômetro Clínico da Vizinhança
-            </h2>
-            <p className="text-gray-600 text-xs md:text-sm mb-6 leading-relaxed">
-              Dados obtidos através de questionários de impacto comunitário autônomos. Estas taxas refletem o cotidiano das famílias que compartilham divisas com grandes polos industriais e logísticos.
-            </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {doresEstatisticas.map((stat, idx) => (
-                <div key={idx} className="bg-white border border-rose-50 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow">
-                  <div className="flex justify-between items-start mb-1.5">
-                    <span className="text-2.5xl font-black text-rose-600 tracking-tight">{stat.rate}</span>
-                    <span className="text-[10px] bg-rose-50 border border-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-bold">
-                      {stat.badge}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-gray-850 text-xs sm:text-sm">{stat.title}</h3>
-                  <p className="text-[11px] text-gray-500 mt-1 leading-snug">{stat.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-rose-100/50 flex items-center justify-between text-xs text-rose-950">
-            <span>Diagnóstico consolidado por comitês de base territorial.</span>
-            <span className="font-bold flex items-center text-rose-700">
-              Total de moradias afetadas ~14k <ArrowRight className="h-3.5 w-3.5 ml-1" />
-            </span>
-          </div>
-        </div>
-
-        {/* Emotion Word Tag Board */}
-        <div className="bg-[#0b131a] text-white rounded-3.5xl p-6 md:p-8 flex flex-col justify-between shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full filter blur-2xl pointer-events-none"></div>
-          <div>
-            <div className="flex items-center space-x-2 text-rose-450 font-bold mb-4">
-              <BadgeAlert className="h-5 w-5 text-rose-500" />
-              <span className="text-xs uppercase tracking-wider text-rose-500">Mural Sensorial de Sobrecarga</span>
-            </div>
-            <h2 className="font-sans font-bold text-xl text-gray-100 tracking-tight mb-2">
-              Dicionário do Desgaste
-            </h2>
-            <p className="text-gray-400 text-xs mb-6 leading-relaxed">
-              O que os moradores escutam, enxergam, respiram e sentem nos piores momentos do mês.
-            </p>
-
-            <div className="flex flex-wrap gap-2.5">
-              {palavrasDeTristeza.map((item, idx) => (
-                <span 
-                  key={idx} 
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-default transition-all hover:scale-105 duration-100 ${
-                    item.level === 'Crítico' 
-                      ? 'bg-rose-550/20 text-rose-350 border border-rose-500/30'
-                      : item.level === 'Urgente'
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                      : 'bg-slate-800 text-slate-300 border border-slate-700/50'
-                  }`}
-                  title={`Frequência do sintoma: ${item.level}`}
-                >
-                  {item.word}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8 pt-4 border-t border-slate-800 text-[11px] text-gray-400 flex items-center justify-between">
-            <span>Palavras recolhidas de depoimentos espontâneos.</span>
-            <Frown className="h-4 w-4 text-rose-400" />
-          </div>
-        </div>
-
-      </div>
-
-      {/* Main Depoimentos Workspace Area */}
-      <div className="bg-white border border-[#e9ecef] rounded-3.5xl p-6 md:p-8 shadow-xs">
-        
-        {/* Filtering & Navigation topbar */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b border-gray-100 pb-5">
-          <div>
-            <h3 className="font-sans font-bold text-lg text-gray-900">Relatos Íntimos & Entrevistas</h3>
-            <p className="text-xs text-gray-500">Filtrar narrativas por tipo de impacto ou dor principal.</p>
-          </div>
-
-          {/* Filtering buttons */}
-          <div className="flex flex-wrap gap-2">
-            {(['Todos', 'Ar', 'Água', 'Ruído'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => { setActiveFiltro(f); setSelectedDepoimento(null); }}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  activeFiltro === f
-                    ? 'bg-[#1b4332] text-white shadow-xs'
-                    : 'bg-[#f5f7f6] text-gray-600 hover:bg-gray-100 border border-[#e9ecef]'
-                }`}
-              >
-                {f === 'Todos' ? 'Todos os Relatos' : `Impactos de ${f}`}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Big layout area split into Side list of names and Main details preview */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* List of Persons */}
-          <div className="lg:col-span-5 space-y-3.5 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-            {filteredDepoimentos.map((dep) => {
-              const isSelected = selectedDepoimento === dep.id || (!selectedDepoimento && filteredDepoimentos[0]?.id === dep.id);
-              const tagColors = {
-                Ar: 'bg-teal-50 text-teal-700 border-teal-100',
-                Água: 'bg-blue-50 text-blue-700 border-blue-100',
-                Ruído: 'bg-purple-50 text-purple-700 border-purple-100',
-                Geral: 'bg-gray-50 text-gray-700 border-gray-100'
-              };
-
-              return (
-                <button
-                  key={dep.id}
-                  onClick={() => setSelectedDepoimento(dep.id)}
-                  className={`w-full text-left p-4.5 rounded-2.5xl border transition-all flex flex-col space-y-2 relative focus:outline-hidden ${
-                    isSelected
-                      ? 'bg-rose-50/40 border-rose-200 ring-1 ring-rose-200'
-                      : 'bg-white border-[#e9ecef] hover:bg-gray-50/50'
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="text-[10px] font-bold text-gray-400 block tracking-wider uppercase">Morador(a) Afetado(a)</span>
-                      <h4 className="font-bold text-sm text-gray-900">{dep.nome}, {dep.idade} anos</h4>
-                    </div>
-                    <span className={`text-[10px] font-bold border px-2 py-0.5 rounded-full ${tagColors[dep.categoria]}`}>
-                      {dep.categoria}
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-gray-600 font-medium italic line-clamp-2">
-                    "{dep.queixa}"
-                  </p>
-
-                  <div className="flex justify-between items-center text-[10px] text-gray-550 pt-2 border-t border-gray-100/50">
-                    <span className="flex items-center text-gray-500">
-                      <MapPin className="h-3 w-3 mr-1 text-[#f28f3b]" />
-                      {dep.bairro}
-                    </span>
-                    <span className="font-bold text-rose-600">
-                      Gravidade: {dep.dataTermometro}%
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Large display selected testimony */}
-          <div className="lg:col-span-7">
-            {(() => {
-              const activeId = selectedDepoimento || filteredDepoimentos[0]?.id;
-              const depObj = depoimentos.find(d => d.id === activeId);
-
-              if (!depObj) {
+            <div className="flex flex-wrap gap-2 rounded-2xl border border-[#DDE8D8] bg-[#F8FAF7] p-1.5">
+              {tabConfig.map((tab) => {
+                const Icon = tab.icon;
+                const active = activeTab === tab.id;
                 return (
-                  <div className="h-full bg-gray-50 border border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center p-8 text-center text-gray-400">
-                    <User className="h-12 w-12 mb-2 stroke-1" />
-                    <p className="text-xs">Clique em um depoimento para ler o relato completo deste morador.</p>
-                  </div>
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-extrabold transition-all ${
+                      active
+                        ? 'bg-[#123524] text-white shadow-sm'
+                        : 'bg-white text-[#123524] hover:bg-[#E8F1EA] border border-[#DDE8D8]'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                  </button>
                 );
-              }
+              })}
+            </div>
+          </div>
+        </section>
 
-              return (
-                <div className="bg-[#f5f7f6] border border-[#e9ecef] rounded-3.5xl p-6 md:p-8 text-left space-y-6 relative h-full flex flex-col justify-between">
-                  <div className="absolute top-5 right-5 w-24 h-24 bg-[#1b4332]/5 rounded-full filter blur-2xl pointer-events-none"></div>
-                  
-                  <div className="space-y-4">
-                    {/* Person Header */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                      <div className="flex items-center space-x-3.5">
-                        <div className="w-12 h-12 bg-rose-100/80 text-rose-700 rounded-full border border-rose-300/30 flex items-center justify-center font-bold text-lg">
-                          {depObj.nome.charAt(0)}
-                        </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <h3 className="font-sans font-bold text-base md:text-lg text-[#1b4332]">{depObj.nome}</h3>
-                            <span className="text-xs text-gray-500 font-medium">({depObj.idade} anos)</span>
-                          </div>
-                          <span className="text-xs text-gray-600 flex items-center mt-0.5">
-                            <MapPin className="h-3 w-3 text-[#f28f3b] mr-1" />
-                            {depObj.bairro}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Thermometer rating */}
-                      <div className="bg-white border border-[#e9ecef] rounded-xl px-3 py-2 text-right shadow-2xs shrink-0 self-start sm:self-center">
-                        <span className="text-[10px] text-gray-400 block font-medium uppercase tracking-wider">Índice de Afetação</span>
-                        <div className="flex items-center space-x-1.5">
-                          <span className="text-sm font-black text-rose-600">{depObj.dataTermometro}%</span>
-                          <div className="w-10 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="h-full bg-rose-500 rounded-full" style={{ width: `${depObj.dataTermometro}%` }}></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Problem brief */}
-                    <div className="bg-white/80 border border-gray-150 rounded-2xl p-4 text-xs font-semibold text-gray-800 flex items-start space-x-2.5">
-                      <MessageSquare className="h-4.5 w-4.5 text-rose-500 shrink-0 mt-0.5" />
-                      <div>
-                        <span className="text-[10px] text-gray-400 font-bold block uppercase tracking-wider">Queixa Declarada</span>
-                        "{depObj.queixa}"
-                      </div>
-                    </div>
-
-                    {/* Extended testmonial narrative */}
-                    <div className="space-y-1.5">
-                      <span className="text-[10px] text-gray-400 font-bold block uppercase tracking-wider">O Relato do Quotidiano</span>
-                      <p className="text-xs md:text-sm text-gray-700 leading-relaxed italic bg-white p-5 rounded-2.5xl border border-gray-150 shadow-2xs">
-                        "{depObj.historia}"
-                      </p>
-                    </div>
-
-                    {/* Specific clinical side effect */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                      <div className="bg-rose-50/40 border border-rose-100 rounded-2xl p-4 text-xs text-rose-900 space-y-1">
-                        <strong className="text-rose-950 font-semibold block flex items-center">
-                          <Heart className="h-3.5 w-3.5 mr-1 text-rose-600 fill-rose-100" />
-                          Saúde & Impacto Físico
-                        </strong>
-                        <p className="text-rose-800 text-[11px] leading-relaxed">{depObj.saudeEfeito}</p>
-                      </div>
-
-                      <div className="bg-amber-50/40 border border-amber-100 rounded-2xl p-4 text-xs text-amber-900 space-y-1">
-                        <strong className="text-amber-950 font-semibold block flex items-center">
-                          <Activity className="h-3.5 w-3.5 mr-1 text-amber-600" />
-                          Limitações do Dia a Dia
-                        </strong>
-                        <p className="text-amber-800 text-[11px] leading-relaxed">{depObj.cotidianoAfetado}</p>
-                      </div>
-                    </div>
+        {activeTab === 'indicadores' && (
+          <section className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+              {realImpactStats.slice(0, 4).map((stat) => (
+                <article key={stat.id} className="bg-white border border-[#DDE8D8] rounded-2xl p-6 shadow-sm flex flex-col min-h-[260px]">
+                  <div className="flex items-start justify-between gap-4">
+                    <Badge>{stat.label}</Badge>
+                    <ShieldCheck className="h-5 w-5 text-[#2F6B4F] shrink-0" />
                   </div>
+                  <strong className="mt-5 text-3xl font-black text-[#C44A1C]">{stat.displayValue}</strong>
+                  <p className="mt-2 text-[11px] font-black uppercase tracking-wider text-[#4B5F55]">{stat.category}</p>
+                  <h3 className="mt-2 text-lg font-black leading-tight text-[#123524]">{stat.metricName}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-[#4B5F55] flex-1">{stat.description}</p>
+                  <a
+                    href={stat.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-5 inline-flex items-center gap-1 text-xs font-bold text-[#2F6B4F] hover:text-[#123524]"
+                  >
+                    Fonte: {stat.sourceName}
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </article>
+              ))}
+            </div>
 
-                  <div className="text-[10px] text-gray-400 text-right italic pt-4 mt-4 border-t border-gray-200/55 flex justify-between items-center">
-                    <span className="flex items-center text-gray-500">
-                      <Calendar className="h-3.5 w-3.5 mr-1 text-gray-400" />
-                      Entrevista colhida em Maio de 2026
-                    </span>
-                    <span>Os nomes reais dos entrevistados foram alterados em conformidade com as diretrizes da LGPD.</span>
+            <div className="bg-white border border-[#DDE8D8] rounded-[28px] p-6 sm:p-8 shadow-sm">
+              <div className="max-w-3xl">
+                <Badge tone="orange">Casos documentados</Badge>
+                <h2 className="mt-4 text-2xl sm:text-3xl font-black text-[#123524]">Casos reais que mostram por que a EcoVoz importa</h2>
+                <p className="mt-3 text-sm leading-relaxed text-[#4B5F55]">
+                  Indicadores mostram a escala do problema. Casos documentados revelam o impacto humano: território, saúde, moradia, pesca, memória e permanência comunitária.
+                </p>
+              </div>
+
+              <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-5">
+                {documentedRacismCases.map((caseItem) => (
+                  <article key={caseItem.id} className="overflow-hidden rounded-3xl border border-[#DDE8D8] bg-white shadow-sm flex flex-col hover:shadow-md transition-shadow">
+                    <div className="relative h-48 bg-[#E8F1EA] overflow-hidden">
+                      {caseItem.imageUrl ? (
+                        <img
+                          src={caseItem.imageUrl}
+                          alt={caseItem.imageCaption || caseItem.title}
+                          className="h-full w-full object-cover"
+                          referrerPolicy="no-referrer"
+                          onError={(event) => {
+                            event.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : null}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#123524]/75 via-[#123524]/25 to-transparent" />
+                      <div className="absolute top-4 left-4">
+                        <Badge tone="orange">{caseItem.label}</Badge>
+                      </div>
+                      <div className="absolute bottom-4 left-4 right-4 ecovoz-media-overlay">
+                        <p className="media-kicker text-[10px] font-black uppercase tracking-wider">{caseItem.location}</p>
+                      </div>
+                    </div>
+                    <div className="p-5 flex flex-col flex-1">
+                      <h3 className="text-xl font-black leading-tight text-[#123524]">{caseItem.title}</h3>
+                      <p className="mt-3 text-sm leading-relaxed text-[#4B5F55]">{caseItem.context}</p>
+                      <div className="mt-4 rounded-2xl bg-[#F8FAF7] border border-[#DDE8D8] p-4">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-[#C44A1C]">Impacto humano</p>
+                        <p className="mt-2 text-sm text-[#16231C] leading-relaxed">{caseItem.humanImpact}</p>
+                      </div>
+                      {caseItem.imageCaption && (
+                        <p className="mt-3 text-[10px] text-[#4B5F55] italic">{caseItem.imageCaption}</p>
+                      )}
+                      <a
+                        href={caseItem.sourceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-5 inline-flex items-center gap-1 text-xs font-bold text-[#2F6B4F] hover:text-[#123524]"
+                      >
+                        Fonte: {caseItem.sourceName}
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white border border-[#DDE8D8] rounded-[28px] p-6 sm:p-8 shadow-sm">
+              <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-8 items-center">
+                <div>
+                  <Badge tone="soft">Leitura correta dos dados</Badge>
+                  <h2 className="mt-4 text-2xl font-black text-[#123524]">Dados oficiais + protótipo demonstrativo</h2>
+                  <p className="mt-3 text-sm leading-relaxed text-[#4B5F55]">
+                    Os indicadores acima usam fontes públicas. Já os relatos da próxima seção são exemplos simulados para demonstrar o funcionamento da plataforma, e não entrevistas reais.
+                  </p>
+                </div>
+                <div className="grid sm:grid-cols-3 gap-3">
+                  <div className="rounded-2xl bg-[#F8FAF7] border border-[#DDE8D8] p-4">
+                    <BookOpen className="h-5 w-5 text-[#F28C28]" />
+                    <h3 className="mt-3 text-sm font-black text-[#123524]">Dado oficial</h3>
+                    <p className="mt-1 text-xs text-[#4B5F55]">Possui fonte pública e link verificável.</p>
+                  </div>
+                  <div className="rounded-2xl bg-[#F8FAF7] border border-[#DDE8D8] p-4">
+                    <FileText className="h-5 w-5 text-[#2F6B4F]" />
+                    <h3 className="mt-3 text-sm font-black text-[#123524]">Relato documentado</h3>
+                    <p className="mt-1 text-xs text-[#4B5F55]">Deve vir de notícia, estudo ou registro real.</p>
+                  </div>
+                  <div className="rounded-2xl bg-[#F8FAF7] border border-[#DDE8D8] p-4">
+                    <Users className="h-5 w-5 text-[#2F6B4F]" />
+                    <h3 className="mt-3 text-sm font-black text-[#123524]">Demonstração</h3>
+                    <p className="mt-1 text-xs text-[#4B5F55]">Exemplo criado para validar o protótipo.</p>
                   </div>
                 </div>
-              );
-            })()}
-          </div>
+              </div>
+            </div>
+          </section>
+        )}
 
-        </div>
+        {activeTab === 'relatos' && (
+          <section className="bg-white border border-[#DDE8D8] rounded-[28px] p-6 sm:p-8 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#DDE8D8] pb-6">
+              <div>
+                <Badge tone="soft">Demonstração do protótipo</Badge>
+                <h2 className="mt-4 text-2xl font-black text-[#123524]">Relatos representativos do protótipo</h2>
+                <p className="mt-2 text-sm text-[#4B5F55]">
+                  Exemplos de relatos comunitários para demonstrar como a plataforma organiza problemas do território.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {filters.map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => {
+                      setActiveFiltro(filter);
+                      const next = filter === 'Todos' ? relatosDemo[0] : relatosDemo.find((item) => item.categoria === filter);
+                      if (next) setSelectedRelato(next.id);
+                    }}
+                    className={`rounded-full px-4 py-2 text-xs font-extrabold border transition-all ${
+                      activeFiltro === filter
+                        ? 'bg-[#123524] text-white border-[#123524]'
+                        : 'bg-white text-[#123524] border-[#DDE8D8] hover:bg-[#E8F1EA]'
+                    }`}
+                  >
+                    {filter}
+                  </button>
+                ))}
+              </div>
+            </div>
 
+            <div className="grid lg:grid-cols-[0.85fr_1.15fr] gap-6 mt-6">
+              <div className="space-y-3 max-h-[520px] overflow-y-auto pr-2 custom-scrollbar">
+                {filteredRelatos.map((relato) => {
+                  const selected = currentRelato.id === relato.id;
+                  return (
+                    <button
+                      key={relato.id}
+                      onClick={() => setSelectedRelato(relato.id)}
+                      className={`w-full text-left rounded-2xl border p-5 transition-all ${
+                        selected
+                          ? 'bg-[#FFF8EF] border-[#F6C56B] shadow-sm'
+                          : 'bg-white border-[#DDE8D8] hover:border-[#A8CBB1] hover:bg-[#F8FAF7]'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h3 className="text-base font-black text-[#123524]">{relato.perfil}</h3>
+                          <p className="mt-1 text-xs text-[#4B5F55]">{relato.local}</p>
+                        </div>
+                        <span className="rounded-full bg-[#E8F1EA] px-2.5 py-1 text-[10px] font-black text-[#2F6B4F]">
+                          {relato.categoria}
+                        </span>
+                      </div>
+                      <p className="mt-4 text-sm italic text-[#4B5F55]">“{relato.queixa}”</p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <article className="rounded-[28px] border border-[#DDE8D8] bg-[#F8FAF7] p-5 sm:p-7 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-full bg-[#FFF3E0] border border-[#F6C56B] flex items-center justify-center text-[#C44A1C] font-black">
+                      D
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-xl font-black text-[#123524]">{currentRelato.perfil}</h3>
+                        <Badge tone="orange">{currentRelato.prioridade}</Badge>
+                      </div>
+                      <p className="mt-1 inline-flex items-center gap-1 text-sm text-[#4B5F55]"><MapPin className="h-4 w-4 text-[#F28C28]" />{currentRelato.local}</p>
+                    </div>
+                  </div>
+                  <Badge tone="soft">Demonstração do protótipo</Badge>
+                </div>
+
+                <div className="mt-6 rounded-2xl bg-white border border-[#DDE8D8] p-5">
+                  <p className="text-[11px] font-black uppercase tracking-wider text-[#F28C28]">Queixa coletiva</p>
+                  <p className="mt-2 text-sm italic text-[#16231C]">“{currentRelato.queixa}”</p>
+                </div>
+
+                <div className="mt-5 rounded-2xl bg-white border border-[#DDE8D8] p-5">
+                  <p className="text-[11px] font-black uppercase tracking-wider text-[#123524]">Relato demonstrativo</p>
+                  <p className="mt-3 text-sm sm:text-base leading-relaxed text-[#4B5F55]">{currentRelato.resumo}</p>
+                </div>
+
+                <div className="mt-5 grid md:grid-cols-2 gap-4">
+                  <div className="rounded-2xl bg-white border border-[#DDE8D8] p-5">
+                    <Heart className="h-5 w-5 text-[#C44A1C]" />
+                    <h4 className="mt-3 text-sm font-black text-[#123524]">Impacto percebido</h4>
+                    <p className="mt-2 text-sm text-[#4B5F55]">{currentRelato.impacto}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white border border-[#DDE8D8] p-5">
+                    <Users className="h-5 w-5 text-[#2F6B4F]" />
+                    <h4 className="mt-3 text-sm font-black text-[#123524]">Cotidiano afetado</h4>
+                    <p className="mt-2 text-sm text-[#4B5F55]">{currentRelato.cotidiano}</p>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+        )}
+
+        {activeTab === 'evidencias' && (
+          <section className="bg-white border border-[#DDE8D8] rounded-[28px] p-6 sm:p-8 shadow-sm">
+            <div className="max-w-3xl">
+              <Badge>Fontes públicas</Badge>
+              <h2 className="mt-4 text-2xl font-black text-[#123524]">Fontes oficiais para alimentar a plataforma</h2>
+              <p className="mt-2 text-sm leading-relaxed text-[#4B5F55]">
+                Bases públicas que podem ser conectadas ao EcoVoz. Casos reais ficam na aba de indicadores; esta área reúne fontes para alimentar gráficos, mapas e validação técnica.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-5 mt-6">
+              {publicEvidenceCases.slice(0, 4).map((caseItem) => (
+                <article key={caseItem.id} className="rounded-2xl border border-[#DDE8D8] bg-[#F8FAF7] p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <Badge>{caseItem.label}</Badge>
+                    <Newspaper className="h-5 w-5 text-[#2F6B4F]" />
+                  </div>
+                  <h3 className="mt-4 text-lg font-black text-[#123524]">{caseItem.title}</h3>
+                  <p className="mt-1 text-xs font-bold text-[#4B5F55]">{caseItem.location}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-[#4B5F55]">{caseItem.context}</p>
+                  <a
+                    href={caseItem.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[#2F6B4F] hover:text-[#123524]"
+                  >
+                    Fonte: {caseItem.sourceName}
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
-
     </div>
   );
 }

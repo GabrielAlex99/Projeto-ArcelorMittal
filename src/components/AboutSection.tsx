@@ -1,191 +1,222 @@
 import React from 'react';
-import { Award, CheckCircle, Shield, Globe, Users, Code, BookOpen } from 'lucide-react';
+import { Award, BookOpen, CheckCircle2, Code, Globe2, Handshake, Leaf, MapPinned, ShieldCheck, Target, Users } from 'lucide-react';
+
+interface Pillar {
+  title: string;
+  desc: string;
+  icon: React.ReactNode;
+}
+
+interface OdsCard {
+  number: string;
+  code: string;
+  title: string;
+  desc: string;
+  color: string;
+}
+
+const pilares: Pillar[] = [
+  {
+    title: 'Escuta comunitária',
+    desc: 'Relatos simples, organizados por território, categoria e prioridade.',
+    icon: <Users className="h-5 w-5" />,
+  },
+  {
+    title: 'Mapeamento territorial',
+    desc: 'Visualização dos pontos críticos para orientar resposta e prevenção.',
+    icon: <MapPinned className="h-5 w-5" />,
+  },
+  {
+    title: 'Governança ESG',
+    desc: 'Evidências, indicadores e rastreabilidade para decisões mais transparentes.',
+    icon: <ShieldCheck className="h-5 w-5" />,
+  },
+  {
+    title: 'Soluções aplicáveis',
+    desc: 'Banco de ações sustentáveis para mitigar riscos e gerar impacto mensurável.',
+    icon: <Leaf className="h-5 w-5" />,
+  },
+];
+
+const odsCards: OdsCard[] = [
+  {
+    number: '3',
+    code: 'ODS 3',
+    title: 'Saúde e bem-estar',
+    desc: 'Redução de exposição a poluição, ruído e riscos ambientais que afetam a saúde cotidiana.',
+    color: '#4C9F38',
+  },
+  {
+    number: '6',
+    code: 'ODS 6',
+    title: 'Água e saneamento',
+    desc: 'Apoio ao mapeamento de esgoto, contaminação hídrica e vulnerabilidade sanitária.',
+    color: '#26BDE2',
+  },
+  {
+    number: '9',
+    code: 'ODS 9',
+    title: 'Indústria e inovação',
+    desc: 'Uso de tecnologia para aproximar indústria, território e prevenção socioambiental.',
+    color: '#F36D25',
+  },
+  {
+    number: '11',
+    code: 'ODS 11',
+    title: 'Cidades sustentáveis',
+    desc: 'Priorização de comunidades vulnerabilizadas no planejamento urbano e ambiental.',
+    color: '#FD9D24',
+  },
+  {
+    number: '12',
+    code: 'ODS 12',
+    title: 'Consumo responsável',
+    desc: 'Incentivo a economia circular, gestão de resíduos e rastreabilidade de impactos.',
+    color: '#C1971F',
+  },
+  {
+    number: '13',
+    code: 'ODS 13',
+    title: 'Ação climática',
+    desc: 'Integração de dados climáticos, emissões e riscos territoriais para prevenção.',
+    color: '#3F7E44',
+  },
+  {
+    number: '15',
+    code: 'ODS 15',
+    title: 'Vida terrestre',
+    desc: 'Valorização de arborização, corredores verdes e recomposição de áreas degradadas.',
+    color: '#56C02B',
+  },
+  {
+    number: '17',
+    code: 'ODS 17',
+    title: 'Parcerias',
+    desc: 'Conexão entre empresa, poder público, academia e lideranças comunitárias.',
+    color: '#194873',
+  },
+];
 
 export default function AboutSection() {
-  const pilares = [
-    { p: 'Desenvolvimento Web', desc: 'Codificado em arquiteturas de fácil compressão para fomentar o aprendizado de jovens desenvolvedores civis.', icon: <Code className="h-5 w-5" /> },
-    { p: 'Sustentabilidade', desc: 'Foco na conservação dos ecossistemas locais, melhoria da qualidade do ar, solo e vazão hídrica.', icon: <Globe className="h-5 w-5" /> },
-    { p: 'Governança ESG', desc: 'Adequação ética em Environmental, Social and Governance, demonstrando como indústrias de grande porte reduzem passivos.', icon: <CheckCircle className="h-5 w-5" /> },
-    { p: 'Justiça Ambiental', desc: 'Prevenção e combate ao Racismo Ambiental de forma prática, redistribuindo os recursos de bem-estar de forma justa.', icon: <Shield className="h-5 w-5" /> },
-    { p: 'Escuta Comunitária', desc: 'Canais abertos que colhem depoimentos sem burocracias, gerando legitimidade e transparência direta.', icon: <Users className="h-5 w-5" /> },
-    { p: 'Inovação Social', desc: 'Mobilização coletiva onde moradores e academia cocriam engenharia urbana aplicada à vida real.', icon: <Award className="h-5 w-5" /> },
-    { p: 'Responsabilidade Social', desc: 'Aproximação institucional entre forças de mercado industrial e as vilas operárias vizinhas.', icon: <BookOpen className="h-5 w-5" /> }
-  ];
-
   return (
-    <section id="sobre" className="py-20 bg-[#f5f7f6] border-t border-[#e9ecef] text-left relative">
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#1b4332]/5 rounded-full filter blur-3xl pointer-events-none"></div>
+    <section id="sobre" className="relative bg-[#F4F7F2] py-20 text-left text-[#16231C]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_15%,rgba(168,203,177,0.36),transparent_28%),radial-gradient(circle_at_90%_5%,rgba(242,140,40,0.08),transparent_30%)]" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Main Columns Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16">
-          
-          {/* Left Description Column */}
-          <div className="lg:col-span-6 space-y-6">
-            <div className="flex items-center space-x-2">
-              <span className="w-8 h-px bg-[#1b4332]"></span>
-              <span className="text-xs font-bold text-[#f28f3b] uppercase tracking-widest">Sobre o Projeto</span>
-            </div>
-            
-            <h2 className="font-sans font-bold text-3xl md:text-4xl text-[#1b4332] tracking-tight leading-tight">
-              Transformar escuta em ação, dados em prioridades concretas.
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
+          <div className="lg:col-span-6">
+            <span className="inline-flex items-center rounded-full border border-[#A8CBB1] bg-white px-4 py-1.5 text-[11px] font-black uppercase tracking-wider text-[#123524] shadow-sm">
+              Sobre o EcoVoz
+            </span>
+            <h2 className="mt-5 max-w-2xl text-3xl font-black leading-tight tracking-tight text-[#123524] md:text-5xl">
+              A voz da comunidade vira dado. O dado vira ação.
             </h2>
-            
-            <p className="text-gray-700 text-sm md:text-base leading-relaxed">
-              A Plataforma de Escuta, Mapeamento e Soluções Socioambientais nasce como uma proposta tecnológica para apoiar empresas, comunidades e instituições na identificação de desigualdades ambientais. A ferramenta busca transformar relatos comunitários em dados, dados em prioridades e prioridades em ações concretas.
+            <p className="mt-5 max-w-2xl text-sm leading-relaxed text-[#4B5F55] md:text-base">
+              A EcoVoz é uma proposta de plataforma socioambiental para transformar relatos comunitários em evidências, mapas, prioridades e soluções aplicáveis. O foco é apoiar decisões mais transparentes em territórios afetados por desigualdades ambientais.
             </p>
 
-            <blockquote className="border-l-2 border-[#1b4332] pl-4 py-1 italic text-gray-500 text-xs sm:text-sm">
-              &ldquo;Mapear impactos é o primeiro passo para reduzir desigualdades. Sustentabilidade também significa justiça territorial.&rdquo;
-            </blockquote>
-
-            <div className="p-4 bg-white border border-[#e9ecef] rounded-2xl shadow-xs">
-              <span className="text-[#f28f3b] font-bold ml-1 text-xs sm:text-sm uppercase block mb-1">Fundamentação Científica e de Governança Digital</span>
-              <p className="text-gray-600 text-xs leading-relaxed">
-                Esta plataforma baseia-se em parâmetros físico-químicos e acústicos reais estabelecidos pela legislação brasileira, incluindo as resoluções do CONAMA 491/2018 para qualidade do ar (PM10, PM2.5), a norma técnica NBR 10151 para limites de conforto acústico residencial, e as diretrizes globais do GRI (Global Reporting Initiative) para governança ESG aplicada.
-              </p>
+            <div className="mt-6 rounded-3xl border border-[#DDE8D8] bg-white p-5 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="rounded-2xl bg-[#FFF3E0] p-3 text-[#C44A1C]">
+                  <Target className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wider text-[#C44A1C]">Proposta de valor</p>
+                  <p className="mt-1 text-sm leading-relaxed text-[#4B5F55]">
+                    Para comunidades, mais voz e retorno. Para empresas, prevenção de riscos, evidências ESG e priorização de investimentos sociais. Para o território, decisões orientadas por dados verificáveis.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Right Pillar Grid Column */}
           <div className="lg:col-span-6">
-            <div className="bg-white border border-[#e9ecef] p-6 md:p-8 rounded-3xl shadow-md space-y-4">
-              <h3 className="text-xs font-bold text-[#0b3d59] uppercase tracking-widest block mb-4">
-                Integração Multidimensional do Projeto
-              </h3>
+            <div className="rounded-[32px] border border-[#DDE8D8] bg-white p-6 shadow-sm md:p-8">
+              <div className="flex items-center justify-between gap-4 border-b border-[#DDE8D8] pb-4">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wider text-[#F28C28]">Como o projeto funciona</p>
+                  <h3 className="mt-1 text-xl font-black text-[#123524]">Da escuta à resposta concreta</h3>
+                </div>
+                <Globe2 className="h-7 w-7 text-[#2F6B4F]" />
+              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {pilares.slice(0, 6).map((item) => (
-                  <div key={item.p} className="p-4 bg-[#f5f7f6] rounded-2xl border border-[#e9ecef] text-left">
-                    <div className="text-[#1b4332] mb-2">{item.icon}</div>
-                    <h4 className="font-bold text-[#1b4332] text-xs">{item.p}</h4>
-                    <p className="text-[11px] text-gray-600 mt-1 leading-relaxed">{item.desc}</p>
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {pilares.map((item) => (
+                  <div key={item.title} className="rounded-2xl border border-[#DDE8D8] bg-[#F8FAF7] p-4">
+                    <div className="mb-3 inline-flex rounded-xl bg-white p-2 text-[#2F6B4F] shadow-sm">
+                      {item.icon}
+                    </div>
+                    <h4 className="text-sm font-black text-[#123524]">{item.title}</h4>
+                    <p className="mt-1 text-xs leading-relaxed text-[#4B5F55]">{item.desc}</p>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-
         </div>
 
-        {/* UN SDGs (ODS) Section */}
-        <div className="pt-12 mt-12 border-t border-gray-200 text-left">
-          <div className="flex items-center space-x-2 mb-6">
-            <span className="w-8 h-px bg-[#1b4332]"></span>
-            <span className="text-xs font-bold text-[#f28f3b] uppercase tracking-widest">Compromisso Global</span>
-          </div>
-          
-          <div className="max-w-3xl mb-8">
-            <h3 className="font-sans font-bold text-2xl text-[#1b4332] tracking-tight">
-              Alinhamento com as ODS da Agenda 2030 (ONU)
+        <div className="mt-16 border-t border-[#DDE8D8] pt-12">
+          <div className="mb-8 max-w-3xl">
+            <span className="inline-flex items-center rounded-full border border-[#A8CBB1] bg-white px-4 py-1.5 text-[11px] font-black uppercase tracking-wider text-[#123524] shadow-sm">
+              Agenda 2030
+            </span>
+            <h3 className="mt-4 text-2xl font-black tracking-tight text-[#123524] md:text-3xl">
+              ODS conectadas ao impacto do projeto
             </h3>
-            <p className="text-gray-650 text-sm mt-2 leading-relaxed">
-              O projeto atua diretamente na consecução de metas globais da Organização das Nações Unidas (ONU) para o desenvolvimento sustentável. Mapeamos os pontos críticos comunitários correlacionando-os aos seguintes Objetivos de Desenvolvimento Sustentável (ODS):
+            <p className="mt-3 text-sm leading-relaxed text-[#4B5F55]">
+              A EcoVoz não tenta resolver todos os Objetivos de Desenvolvimento Sustentável ao mesmo tempo. Ela atua como infraestrutura de escuta e evidência para orientar ações em saúde, saneamento, clima, território e governança.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            {/* ODS 3 */}
-            <div className="p-5 bg-white border border-[#4C9F38]/20 hover:border-[#4C9F38] rounded-2.5xl shadow-2xs transition-all relative group text-left">
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#4C9F38] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
-                3
-              </div>
-              <span className="text-[10px] font-bold text-[#4C9F38] uppercase tracking-wider block mb-1">ODS 3</span>
-              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Saúde e Bem-Estar</h4>
-              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
-                Combate à proliferação de moléstias do trato respiratório e estresse crônico causados pela dispersão descontrolada de poeiras pesadas e poluição sonora contínua.
-              </p>
-            </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {odsCards.map((ods) => (
+              <article
+                key={ods.code}
+                className="min-h-[190px] rounded-3xl border bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+                style={{ borderColor: `${ods.color}33` }}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-black uppercase tracking-wider" style={{ color: ods.color }}>
+                      {ods.code}
+                    </p>
+                    <h4 className="mt-2 pr-1 text-base font-black leading-tight text-[#123524]">
+                      {ods.title}
+                    </h4>
+                  </div>
+                  <div
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-base font-black text-white shadow-sm"
+                    style={{ backgroundColor: ods.color }}
+                    aria-hidden="true"
+                  >
+                    {ods.number}
+                  </div>
+                </div>
+                <p className="mt-4 text-sm leading-relaxed text-[#4B5F55]">
+                  {ods.desc}
+                </p>
+              </article>
+            ))}
+          </div>
 
-            {/* ODS 6 */}
-            <div className="p-5 bg-white border border-[#26BDE2]/20 hover:border-[#26BDE2] rounded-2.5xl shadow-2xs transition-all relative group text-left">
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#26BDE2] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
-                6
-              </div>
-              <span className="text-[10px] font-bold text-[#26BDE2] uppercase tracking-wider block mb-1">ODS 6</span>
-              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Água Potável e Saneamento</h4>
-              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
-                Mapeamento ativo para sanar contaminações furtivas em mananciais, poços rasos periféricos e bacias de amortecimento por metais pesados e efluentes industriais líquidos.
-              </p>
+          <div className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="rounded-3xl border border-[#DDE8D8] bg-white p-5 shadow-sm">
+              <BookOpen className="h-5 w-5 text-[#F28C28]" />
+              <h4 className="mt-3 text-sm font-black text-[#123524]">Base técnica</h4>
+              <p className="mt-1 text-xs leading-relaxed text-[#4B5F55]">Fontes públicas e casos documentados sustentam a narrativa do projeto.</p>
             </div>
-
-            {/* ODS 9 */}
-            <div className="p-5 bg-white border border-[#F36D25]/20 hover:border-[#F36D25] rounded-2.5xl shadow-2xs transition-all relative group text-left">
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#F36D25] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
-                9
-              </div>
-              <span className="text-[10px] font-bold text-[#F36D25] uppercase tracking-wider block mb-1">ODS 9</span>
-              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Indústria, Inovação e Infra</h4>
-              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
-                Estímulo ao desenvolvimento de processos produtivos limpos por meio de propostas tecnológicas, cinturões florestais de atenuação e aspersão inteligente.
-              </p>
+            <div className="rounded-3xl border border-[#DDE8D8] bg-white p-5 shadow-sm">
+              <Handshake className="h-5 w-5 text-[#2F6B4F]" />
+              <h4 className="mt-3 text-sm font-black text-[#123524]">Parcerias possíveis</h4>
+              <p className="mt-1 text-xs leading-relaxed text-[#4B5F55]">Empresa, comunidade, universidades e poder público podem atuar com responsabilidades claras.</p>
             </div>
-
-            {/* ODS 11 */}
-            <div className="p-5 bg-white border border-[#FD9D24]/20 hover:border-[#FD9D24] rounded-2.5xl shadow-2xs transition-all relative group text-left">
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#FD9D24] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
-                11
-              </div>
-              <span className="text-[10px] font-bold text-[#FD9D24] uppercase tracking-wider block mb-1">ODS 11</span>
-              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Cidades e Comunidades</h4>
-              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
-                Redução drástica do impacto ecológico e vulnerabilidade habitacional de bairros operários lindeiros a polos industriais petroquímicos e siderúrgicos nacionais.
-              </p>
+            <div className="rounded-3xl border border-[#DDE8D8] bg-white p-5 shadow-sm">
+              <CheckCircle2 className="h-5 w-5 text-[#2F6B4F]" />
+              <h4 className="mt-3 text-sm font-black text-[#123524]">Próxima etapa</h4>
+              <p className="mt-1 text-xs leading-relaxed text-[#4B5F55]">Validar um piloto local com indicadores, retorno à comunidade e acompanhamento de soluções.</p>
             </div>
-
-            {/* ODS 12 */}
-            <div className="p-5 bg-white border border-[#C1971F]/20 hover:border-[#C1971F] rounded-2.5xl shadow-2xs transition-all relative group text-left">
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#C1971F] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
-                12
-              </div>
-              <span className="text-[10px] font-bold text-[#C1971F] uppercase tracking-wider block mb-1">ODS 12</span>
-              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Consumo e Prod. Responsáveis</h4>
-              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
-                Destinação segura de escórias industriais, reaproveitamento de agregados na economia circular e promoção da simbiose industrial perante a comunidade.
-              </p>
-            </div>
-
-            {/* ODS 13 */}
-            <div className="p-5 bg-white border border-[#3F7E44]/20 hover:border-[#3F7E44] rounded-2.5xl shadow-2xs transition-all relative group text-left">
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#3F7E44] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
-                13
-              </div>
-              <span className="text-[10px] font-bold text-[#3F7E44] uppercase tracking-wider block mb-1">ODS 13</span>
-              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Ação Contra a Mudança do Clima</h4>
-              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
-                Plantios perimetrais de arborização viária para arrefecimento térmico nas vilas operárias, sequestro direto de gases estufa e regulação de microclima local.
-              </p>
-            </div>
-
-            {/* ODS 15 */}
-            <div className="p-5 bg-white border border-[#56C02B]/20 hover:border-[#56C02B] rounded-2.5xl shadow-2xs transition-all relative group text-left">
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#56C02B] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
-                15
-              </div>
-              <span className="text-[10px] font-bold text-[#56C02B] uppercase tracking-wider block mb-1">ODS 15</span>
-              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Vida Terrestre</h4>
-              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
-                Uso de sementes e mudas endêmicas da Mata Atlântica/Cerrado para recuperação botânica de corredores degradados e faixas de refúgio ecológico.
-              </p>
-            </div>
-
-            {/* ODS 17 */}
-            <div className="p-5 bg-white border border-[#194873]/20 hover:border-[#194873] rounded-2.5xl shadow-2xs transition-all relative group text-left">
-              <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#194873] text-white flex items-center justify-center font-bold text-sm font-mono shadow-xs">
-                17
-              </div>
-              <span className="text-[10px] font-bold text-[#194873] uppercase tracking-wider block mb-1">ODS 17</span>
-              <h4 className="font-sans font-bold text-sm text-[#1b4332]">Parcerias e Meios de Implantação</h4>
-              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
-                Aproximação multissetorial entre conselhos comunitários de saúde, academia regional técnica e agentes empresariais em prol do bem comum socioambiental.
-              </p>
-            </div>
-
           </div>
         </div>
-
       </div>
     </section>
   );

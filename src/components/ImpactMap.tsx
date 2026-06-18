@@ -20,6 +20,88 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { realIndustrias, avaliacoesLocais, IndustrialSite, AvaliacaoLocalidade } from '../data/initialData';
+import { Eye, Calendar, User, Check } from 'lucide-react';
+
+export interface GalleryItem {
+  id: string;
+  titulo: string;
+  imagemUrl: string;
+  categoria: Category;
+  localizacao: string;
+  data: string;
+  status: 'Em Análise' | 'Vistoriado' | 'Ação Planejada' | 'Resolvido';
+  descricao: string;
+  autor: string;
+}
+
+export const galeriaDeImpactos: GalleryItem[] = [
+  {
+    id: 'gal-1',
+    titulo: 'Poeira Industrial sobre Moradias',
+    imagemUrl: '/images/gallery-air.png',
+    categoria: 'Ar',
+    localizacao: 'Santa Cruz (Jesuítas), RJ',
+    data: 'Demonstração',
+    status: 'Em Análise',
+    descricao: 'Poeira e fuligem atingindo quintais, janelas e áreas de circulação em moradias próximas a fontes industriais, com registro visual e encaminhamento por prioridade.',
+    autor: 'Registro demonstrativo do protótipo'
+  },
+  {
+    id: 'gal-2',
+    titulo: 'Óleo e Resíduos em Canal Urbano',
+    imagemUrl: '/images/gallery-water.png',
+    categoria: 'Água',
+    localizacao: 'Santa Cruz dos Navegantes, SP',
+    data: 'Demonstração',
+    status: 'Vistoriado',
+    descricao: 'Manchas oleosas e resíduos flutuantes em canal urbano próximo a moradias e pontos de pesca demonstram como a plataforma registraria riscos hídricos e sanitários.',
+    autor: 'Registro demonstrativo do protótipo'
+  },
+  {
+    id: 'gal-3',
+    titulo: 'Descarte Irregular de Resíduos',
+    imagemUrl: '/images/gallery-waste.png',
+    categoria: 'Resíduos',
+    localizacao: 'Cubatão (Vila Parisi), SP',
+    data: 'Demonstração',
+    status: 'Ação Planejada',
+    descricao: 'Tambores, entulho e resíduos abandonados em terreno aberto próximos a moradias, sem isolamento adequado e com risco de contaminação do solo.',
+    autor: 'Registro demonstrativo do protótipo'
+  },
+  {
+    id: 'gal-4',
+    titulo: 'Alagamentos por Chuva Extrema',
+    imagemUrl: '/images/gallery-flood.png',
+    categoria: 'Mobilidade',
+    localizacao: 'Zona periférica demonstrativa, SP',
+    data: 'Demonstração',
+    status: 'Resolvido',
+    descricao: 'Chuvas fortes, bueiros obstruídos e drenagem insuficiente causam alagamentos recorrentes em ruas periféricas, dificultando circulação, acesso a serviços e rotina das famílias.',
+    autor: 'Registro demonstrativo do protótipo'
+  },
+  {
+    id: 'gal-5',
+    titulo: 'Supressão de Árvores no Entorno Urbano',
+    imagemUrl: '/images/gallery-green.png',
+    categoria: 'Verde urbano',
+    localizacao: 'Pirajá, Salvador - BA',
+    data: 'Demonstração',
+    status: 'Em Análise',
+    descricao: 'Remoção de arborização e solo exposto no entorno urbano-industrial reduzem sombra, aumentam calor local e eliminam barreiras naturais contra poeira e ruído.',
+    autor: 'Registro demonstrativo do protótipo'
+  },
+  {
+    id: 'gal-6',
+    titulo: 'Mutirão de Arborização Comunitária',
+    imagemUrl: '/images/gallery-solution.png',
+    categoria: 'Verde urbano',
+    localizacao: 'Bairro urbano demonstrativo, RS',
+    data: 'Demonstração',
+    status: 'Resolvido',
+    descricao: 'Ação comunitária demonstrativa com plantio de árvores em calçadas, praças e vias locais para ampliar sombra, reduzir calor e criar barreiras verdes no bairro.',
+    autor: 'Registro demonstrativo do protótipo'
+  }
+];
 
 interface ImpactMapProps {
   relatos: Relato[];
@@ -36,6 +118,9 @@ export default function ImpactMap({ relatos }: ImpactMapProps) {
   const [selectedCategory, setSelectedCategory] = useState<Category | 'Todos'>('Todos');
   const [selectedGravity, setSelectedGravity] = useState<string>('Todos');
   const [heatmapMode, setHeatmapMode] = useState(false);
+
+  // Gallery Interactive zoom states
+  const [selectedGalleryItem, setSelectedGalleryItem] = useState<GalleryItem | null>(null);
 
   // Map Interactive states
   const [zoomLevel, setZoomLevel] = useState<number>(1);
@@ -212,18 +297,49 @@ export default function ImpactMap({ relatos }: ImpactMapProps) {
   };
 
   return (
-    <section id="mapa" className="py-20 bg-[#f5f7f6] border-t border-[#e9ecef]">
+    <section id="mapa" className="py-20 bg-[#F4F7F2] border-t border-[#A8CBB1]/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Title Block */}
         <div className="text-left mb-10">
-          <span className="text-xs font-bold text-[#f28f3b] tracking-wider uppercase block mb-1">Cartografia Participativa</span>
-          <h2 className="font-sans font-bold text-3xl md:text-4xl text-[#1b4332] tracking-tight">
+          <span className="text-xs font-bold text-[#F28C28] tracking-wider uppercase block mb-1">Cartografia Participativa</span>
+          <h2 className="font-sans font-black text-3xl md:text-4xl text-[#123524] tracking-tight">
             Mapa de Impactos Socioambientais (Brasil)
           </h2>
-          <p className="text-gray-600 text-sm md:text-base max-w-2xl mt-1">
-            Explore de forma georreferenciada as denúncias enviadas por cidadãos de todo o Brasil. Monitore indicadores acústicos e de fumaça, busque indústrias vizinhas e analise as queixas da vizinhança gaúcha, fluminense e paulista.
+          <p className="text-[#4B5F55] text-sm md:text-base max-w-2xl mt-1 font-medium">
+            Demonstração de como a EcoVoz organizaria relatos comunitários, evidências visuais, filtros territoriais e status de encaminhamento. Dados oficiais ficam na aba Impactos; aqui o foco é o funcionamento da plataforma.
           </p>
+        </div>
+
+        {/* MAPEAMENTO: foco no funcionamento da plataforma, sem repetir dados oficiais da aba Impactos */}
+        <div className="mb-10 grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <article className="bg-white border border-[#DDE8D8] rounded-3xl p-6 shadow-sm">
+            <div className="h-11 w-11 rounded-2xl bg-[#E8F1EA] text-[#123524] flex items-center justify-center mb-4">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <h3 className="text-lg font-black text-[#123524]">Relato localizado</h3>
+            <p className="mt-2 text-sm leading-relaxed text-[#4B5F55]">
+              Moradores registram ocorrências com categoria, localização, descrição e nível de gravidade. Nesta aba, os registros são demonstrações do protótipo.
+            </p>
+          </article>
+          <article className="bg-white border border-[#DDE8D8] rounded-3xl p-6 shadow-sm">
+            <div className="h-11 w-11 rounded-2xl bg-[#E8F1EA] text-[#123524] flex items-center justify-center mb-4">
+              <Filter className="h-5 w-5" />
+            </div>
+            <h3 className="text-lg font-black text-[#123524]">Triagem territorial</h3>
+            <p className="mt-2 text-sm leading-relaxed text-[#4B5F55]">
+              Filtros por UF, cidade, bairro, categoria e gravidade ajudam a transformar relatos dispersos em prioridade de atendimento.
+            </p>
+          </article>
+          <article className="bg-white border border-[#DDE8D8] rounded-3xl p-6 shadow-sm">
+            <div className="h-11 w-11 rounded-2xl bg-[#E8F1EA] text-[#123524] flex items-center justify-center mb-4">
+              <ArrowRight className="h-5 w-5" />
+            </div>
+            <h3 className="text-lg font-black text-[#123524]">Encaminhamento</h3>
+            <p className="mt-2 text-sm leading-relaxed text-[#4B5F55]">
+              A plataforma organiza evidências visuais, histórico e status para apoiar respostas de empresas, poder público e comunidade.
+            </p>
+          </article>
         </div>
 
         {/* Dynamic Filters Grid Panel */}
@@ -553,15 +669,15 @@ export default function ImpactMap({ relatos }: ImpactMapProps) {
                 {/* Simulated popup card over active marker */}
                 {activePopupRelato && (
                   <div 
-                    className="absolute z-30 bg-white border border-[#0b3d59]/25 rounded-2xl shadow-xl p-4 max-w-[240px] text-xs leading-normal animate-scale-up"
+                    className="absolute z-30 bg-white border border-[#DDE8D8] rounded-2xl shadow-md p-4 max-w-[240px] text-xs leading-normal animate-scale-up text-[#16231C]"
                     style={{
                       left: `${activePopupRelato.coordenadas?.x ?? 50}%`,
                       top: `${activePopupRelato.coordenadas?.y ?? 50}%`,
                       transform: 'translate(-50%, -106%)',
                     }}
                   >
-                    <div className="absolute bottom-[-6px] left-[50%] translate-x-[-50%] w-3 h-3 bg-white border-r border-b border-[#0b3d59]/25 rotate-45"></div>
-                    <div className="flex items-center justify-between pb-1 text-[9.5px] border-b border-gray-100 mb-2 gap-x-2">
+                    <div className="absolute bottom-[-6px] left-[50%] translate-x-[-50%] w-3 h-3 bg-white border-r border-b border-[#DDE8D8] rotate-45"></div>
+                    <div className="flex items-center justify-between pb-1 text-[9.5px] border-b border-[#DDE8D8] mb-2 gap-x-2">
                       <span className="font-extrabold uppercase tracking-wide text-indigo-900 bg-indigo-50 px-1.5 py-0.5 rounded-md">
                         {activePopupRelato.categoria}
                       </span>
@@ -570,15 +686,15 @@ export default function ImpactMap({ relatos }: ImpactMapProps) {
                       }`}>
                         {activePopupRelato.gravidade}
                       </span>
-                      <button onClick={() => setActivePopupRelato(null)} className="text-gray-450 hover:text-gray-700">
-                        <X className="h-3 w-3" />
+                      <button onClick={() => setActivePopupRelato(null)} className="text-[#4B5F55] hover:text-[#16231C] cursor-pointer">
+                        <X className="h-4 w-4" />
                       </button>
                     </div>
                     
                     <div className="text-left">
-                      <h4 className="font-bold text-gray-950 font-sans leading-tight">{activePopupRelato.bairro}</h4>
-                      <p className="text-[10px] text-gray-400 mt-0.5 font-semibold">{activePopupRelato.cidade} - {activePopupRelato.uf}</p>
-                      <p className="text-gray-700 text-[10px] leading-relaxed mt-2 line-clamp-3 italic">"{activePopupRelato.descricao}"</p>
+                      <h4 className="font-bold text-[#16231C] font-sans leading-tight">{activePopupRelato.bairro}</h4>
+                      <p className="text-[10px] text-[#4B5F55] mt-0.5 font-semibold">{activePopupRelato.cidade} - {activePopupRelato.uf}</p>
+                      <p className="text-[#4B5F55] text-[10px] leading-relaxed mt-2 line-clamp-3 italic">"{activePopupRelato.descricao}"</p>
                     </div>
                   </div>
                 )}
@@ -708,7 +824,7 @@ export default function ImpactMap({ relatos }: ImpactMapProps) {
               <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
                 <div className="flex items-center space-x-1.5">
                   <Star className="h-4.5 w-4.5 text-yellow-500 fill-yellow-500" />
-                  <h3 className="font-sans font-bold text-xs text-[#1b4332] uppercase tracking-wide">Depoimentos e Queixas Reais</h3>
+                  <h3 className="font-sans font-bold text-xs text-[#1b4332] uppercase tracking-wide">Avaliações demonstrativas</h3>
                 </div>
                 <span className="text-[9.5px] font-bold text-gray-400 uppercase tracking-widest bg-[#f5f7f6] px-1.5 py-0.5 rounded-md">
                   Vizinhança ({filteredReviews.length})
@@ -739,8 +855,8 @@ export default function ImpactMap({ relatos }: ImpactMapProps) {
                   filteredReviews.map((rev) => (
                     <div key={rev.id} className="p-3 bg-white border border-gray-150 rounded-xl space-y-1.5 text-xs shadow-3xs animate-fade-in relative">
                       <div className="flex items-center justify-between">
-                        <strong className="text-[#1b4332] font-semibold">{rev.autor}</strong>
-                        <span className="text-[9px] text-[#f28f3b] font-bold">{rev.bairro} ({rev.uf})</span>
+                        <strong className="text-[#123524] font-semibold">{rev.autor}</strong>
+                        <span className="text-[9px] text-[#F28C28] font-bold">{rev.bairro} ({rev.uf})</span>
                       </div>
                       <p className="text-gray-650 text-[10.5px] leading-relaxed italic font-normal">
                         "{rev.depoimento}"
@@ -762,6 +878,236 @@ export default function ImpactMap({ relatos }: ImpactMapProps) {
           </div>
 
         </div>
+
+        {/* ===================== VISUAL GALLERY SECTION ===================== */}
+        <div className="mt-16 pt-16 border-t border-[#A8CBB1]/30 text-left">
+          <div className="mb-8">
+            <span className="text-xs font-bold text-[#F28C28] tracking-wider uppercase block mb-1">Registros Fotográficos</span>
+            <h3 className="font-sans font-black text-2xl text-[#123524] tracking-tight">
+              Galeria de evidências territoriais
+            </h3>
+            <p className="text-[#4B5F55] text-xs sm:text-sm max-w-xl mt-1">
+              Imagens representativas para demonstrar como a plataforma organizaria fotos, status e encaminhamentos de relatos comunitários. Em um piloto real, esses espaços seriam substituídos por registros enviados pela comunidade.
+            </p>
+          </div>
+
+          {/* Gallery Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {galeriaDeImpactos.map((item) => {
+              const statusColors = {
+                'Em Análise': 'bg-[#FFF3E0] text-[#C44A1C] border-[#F6C56B]',
+                'Vistoriado': 'bg-[#123524] text-[#FFFFFF] border-transparent',
+                'Ação Planejada': 'bg-[#123524] text-[#FFFFFF] border-transparent',
+                'Resolvido': 'bg-[#123524] text-[#FFFFFF] border-transparent'
+              };
+
+              return (
+                <div 
+                  key={item.id}
+                  className="bg-white border border-[#A8CBB1]/40 rounded-2.5xl overflow-hidden flex flex-col justify-between hover:shadow-md hover:border-[#123524]/50 transition-all duration-300 group"
+                >
+                  <div>
+                    {/* Image Header with Hover Accent */}
+                    <div className="relative h-44 overflow-hidden bg-[#E8F1EA] ecovoz-image-fallback cursor-pointer" onClick={() => setSelectedGalleryItem(item)}>
+                      <img
+                        src={item.imagemUrl}
+                        alt={item.titulo}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={(event) => {
+                          event.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#123524]/70 via-[#123524]/20 to-transparent"></div>
+
+                      <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-wider bg-[#123524] text-white px-2 py-0.5 rounded-md shadow-sm">
+                          {item.categoria}
+                        </span>
+                        <span className="text-[9px] font-black uppercase tracking-wider bg-white/90 text-[#C44A1C] px-2 py-0.5 rounded-md shadow-sm">
+                          Representativa
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="p-5 space-y-3">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className={`text-[8.5px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${statusColors[item.status]}`}>
+                          {item.status}
+                        </span>
+                        <div className="flex items-center space-x-1 text-gray-400 text-[10px] font-semibold">
+                          <Calendar className="h-3 w-3" />
+                          <span>{item.data}</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] uppercase font-black tracking-widest text-[#2F6B4F]">Território</p>
+                        <p className="text-xs font-semibold text-[#4B5F55] truncate">{item.localizacao}</p>
+                      </div>
+
+                      <h4 className="font-sans font-black text-base text-[#123524] leading-tight">
+                        {item.titulo}
+                      </h4>
+
+                      <p className="text-[#4B5F55] text-xs font-normal leading-relaxed line-clamp-2">
+                        {item.descricao}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Card Trigger Button footer */}
+                  <div className="p-5 pt-0 border-t border-gray-100/50 mt-2">
+                    <button
+                      onClick={() => setSelectedGalleryItem(item)}
+                      className="w-full py-2.5 bg-[#123524] hover:bg-[#2F6B4F] text-white font-extrabold rounded-xl text-xs transition-all flex items-center justify-center space-x-1 shadow-2xs hover:shadow-xs cursor-pointer active:scale-95 active:bg-[#123524] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#123524]"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      <span>Ver detalhes do registro</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ===================== GALLERY ZOOM DETAILED MODAL ===================== */}
+        {selectedGalleryItem && (
+          <div className="fixed inset-0 z-55 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white border border-[#DDE8D8] rounded-3xl max-w-2xl w-full overflow-hidden shadow-sm relative text-left animate-scale-up max-h-[90vh] flex flex-col text-[#16231C]">
+              
+              {/* Close Button */}
+              <button 
+                onClick={() => setSelectedGalleryItem(null)}
+                className="absolute top-4 right-4 z-50 p-2 rounded-xl bg-black/60 text-white hover:bg-black/80 border border-white/20 hover:scale-105 transition-all cursor-pointer"
+              >
+                <X className="h-4.5 w-4.5" />
+              </button>
+
+              <div className="overflow-y-auto custom-scrollbar flex-grow">
+                {/* Hero Zoomed Image */}
+                <div className="relative h-64 sm:h-72 bg-gray-900">
+                  <img 
+                    src={selectedGalleryItem.imagemUrl} 
+                    alt={selectedGalleryItem.titulo} 
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                  
+                  {/* Floating Labels over Hero image */}
+                  <div className="absolute bottom-6 left-6 right-6 text-left ecovoz-media-overlay">
+                    <span className="text-[10px] font-black uppercase bg-[#F28C28] text-white px-2.5 py-1 rounded-md mb-2 inline-block">
+                      {selectedGalleryItem.categoria} • Registro demonstrativo
+                    </span>
+                    <h3 className="font-sans font-black text-xl sm:text-2xl tracking-tight leading-snug text-white">
+                      {selectedGalleryItem.titulo}
+                    </h3>
+                  </div>
+                </div>
+
+                {/* Info and Metadata details block */}
+                <div className="p-6 md:p-8 space-y-6">
+                  
+                  {/* Status header progress with clean metadata cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-[#DDE8D8] pb-5 text-xs text-[#16231C]">
+                    <div className="flex items-center space-x-3 bg-[#F8FAF7] border border-[#DDE8D8] p-3 rounded-xl shadow-xs">
+                      <MapPin className="h-5 w-5 text-[#2F6B4F] shrink-0" />
+                      <div className="min-w-0">
+                        <span className="block font-bold text-[#4B5F55] uppercase text-[9px] tracking-wider">Localização</span>
+                        <strong className="text-[#16231C] font-semibold text-xs block truncate" title={selectedGalleryItem.localizacao}>{selectedGalleryItem.localizacao}</strong>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3 bg-[#F8FAF7] border border-[#DDE8D8] p-3 rounded-xl shadow-xs">
+                      <Calendar className="h-5 w-5 text-[#F28C28] shrink-0" />
+                      <div className="min-w-0">
+                        <span className="block font-bold text-[#4B5F55] uppercase text-[9px] tracking-wider">Data do Registro</span>
+                        <strong className="text-[#16231C] font-semibold text-xs block truncate">{selectedGalleryItem.data}</strong>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3 bg-[#F8FAF7] border border-[#DDE8D8] p-3 rounded-xl shadow-xs">
+                      <User className="h-5 w-5 text-[#2F6B4F] shrink-0" />
+                      <div className="min-w-0">
+                        <span className="block font-bold text-[#4B5F55] uppercase text-[9px] tracking-wider font-sans">Origem</span>
+                        <strong className="text-[#16231C] font-semibold text-xs block truncate" title={selectedGalleryItem.autor}>
+                          {selectedGalleryItem.autor}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Complete Description panel */}
+                  <div className="space-y-2">
+                    <h4 className="text-[10px] font-extrabold text-[#123524] uppercase tracking-widest font-mono">Descrição do registro demonstrativo</h4>
+                    <p className="text-[#16231C] text-xs sm:text-sm leading-relaxed bg-[#F8FAF7] p-4 rounded-2xl border border-[#DDE8D8]">
+                      {selectedGalleryItem.descricao}
+                    </p>
+                  </div>
+
+                  {/* Interactive Status Flow indicator bar */}
+                  <div className="space-y-3 pt-2 text-[#16231C]">
+                    <h4 className="text-[10px] font-extrabold text-[#123524] uppercase tracking-widest font-mono">Fases Operacionais da Solução</h4>
+                    <div className="grid grid-cols-4 gap-2 text-center text-[9px] font-bold uppercase tracking-wider">
+                      
+                      {/* Step 1: Análise */}
+                      <div className={`py-2 px-1 rounded-lg border ${
+                        selectedGalleryItem.status === 'Em Análise'
+                          ? 'bg-[#FFF3E0] text-[#C44A1C] border-[#F6C56B] font-extrabold shadow-sm'
+                          : 'bg-[#FFFFFF] text-[#123524] border-[#DDE8D8]'
+                      }`}>
+                        1. Análise
+                      </div>
+
+                      {/* Step 2: Vistoria */}
+                      <div className={`py-2 px-1 rounded-lg border ${
+                        selectedGalleryItem.status === 'Vistoriado'
+                          ? 'bg-[#123524] text-[#FFFFFF] border-transparent font-extrabold shadow-sm'
+                          : 'bg-[#FFFFFF] text-[#123524] border-[#DDE8D8]'
+                      }`}>
+                        2. Vistoria
+                      </div>
+
+                      {/* Step 3: Planejado */}
+                      <div className={`py-2 px-1 rounded-lg border ${
+                        selectedGalleryItem.status === 'Ação Planejada'
+                          ? 'bg-[#123524] text-[#FFFFFF] border-transparent font-extrabold shadow-sm'
+                          : 'bg-[#FFFFFF] text-[#123524] border-[#DDE8D8]'
+                      }`}>
+                        3. Planejado
+                      </div>
+
+                      {/* Step 4: Resolvido */}
+                      <div className={`py-2 px-1 rounded-lg border ${
+                        selectedGalleryItem.status === 'Resolvido'
+                          ? 'bg-[#123524] text-[#FFFFFF] border-transparent font-extrabold shadow-sm'
+                          : 'bg-[#FFFFFF] text-[#123524] border-[#DDE8D8]'
+                      }`}>
+                        4. Resolvido
+                      </div>
+
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Modal footer control */}
+              <div className="p-5 border-t border-[#DDE8D8] flex justify-end">
+                <button
+                  onClick={() => setSelectedGalleryItem(null)}
+                  className="px-6 py-2.5 bg-[#123524] hover:bg-[#2F6B4F] text-white font-bold rounded-xl text-xs shadow-sm cursor-pointer transition-all active:scale-95"
+                >
+                  Fechar registro
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
 
       </div>
     </section>

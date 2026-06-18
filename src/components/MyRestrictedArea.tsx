@@ -62,6 +62,7 @@ export default function MyRestrictedArea({
   const [editedPropostaImpact, setEditedPropostaImpact] = useState('');
   const [editedPropostaViabilidade, setEditedPropostaViabilidade] = useState<'Baixa' | 'Média' | 'Alta'>('Alta');
   const [editedPropostaProblemRel, setEditedPropostaProblemRel] = useState('');
+  const [editedPropostaStatus, setEditedPropostaStatus] = useState<'Em Discussão' | 'Em Andamento' | 'Implementado'>('Em Discussão');
 
   // Delete Confirmation State
   const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'relatos' | 'propostas' } | null>(null);
@@ -282,6 +283,7 @@ export default function MyRestrictedArea({
     setEditedPropostaImpact(p.impacto);
     setEditedPropostaViabilidade(p.viabilidade);
     setEditedPropostaProblemRel(p.problemaRelacionado);
+    setEditedPropostaStatus(p.status || 'Em Discussão');
   };
 
   const handleSavePropostaEdit = (e: React.FormEvent) => {
@@ -297,6 +299,7 @@ export default function MyRestrictedArea({
       impacto: editedPropostaImpact,
       viabilidade: editedPropostaViabilidade,
       problemaRelacionado: editedPropostaProblemRel,
+      status: editedPropostaStatus,
     };
 
     onUpdateProposta(updated);
@@ -472,8 +475,8 @@ export default function MyRestrictedArea({
                   <div className="space-y-3 max-w-full md:max-w-[70%]">
                     
                     {/* Header Tags */}
-                    <div className="flex items-center space-x-2.5">
-                      <span className="text-[10px] font-bold text-teal-800 tracking-wider bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md uppercase">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] font-bold text-teal-850 tracking-wider bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md uppercase">
                         {p.categoria}
                       </span>
                       <span className="text-[10px] font-bold bg-[#1b4332]/10 text-[#1b4332] border border-[#1b4332]/20 px-2 py-0.5 rounded-md uppercase flex items-center">
@@ -481,6 +484,13 @@ export default function MyRestrictedArea({
                       </span>
                       <span className="text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md uppercase flex items-center">
                         Custo {p.custo}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase flex items-center ${
+                        p.status === 'Implementado' ? 'bg-emerald-50 text-emerald-800 border-emerald-250 font-bold' :
+                        p.status === 'Em Andamento' ? 'bg-indigo-50 text-indigo-850 border-indigo-250 font-bold' :
+                        'bg-amber-50 text-amber-800 border-amber-250 font-bold'
+                      }`}>
+                        Urgência/Status: {p.status || 'Em Discussão'}
                       </span>
                     </div>
 
@@ -493,9 +503,26 @@ export default function MyRestrictedArea({
                     <p className="text-gray-650 text-xs sm:text-sm leading-relaxed">{p.descricao}</p>
 
                     {/* Impact subcard */}
-                    <div className="bg-[#f5f7f6] p-3 rounded-xl border border-gray-150 text-xs">
+                    <div className="bg-[#f5f7f6] p-3 rounded-xl border border-gray-150 text-xs text-left">
                       <strong className="text-[#1b4332] block mb-0.5">Impacto Mitigatório Estimado:</strong>
                       <span className="text-gray-650 font-normal">{p.impacto}</span>
+                    </div>
+
+                    {/* Progress tracking quick updating bar */}
+                    <div className="flex items-center space-x-2.5 bg-gray-50 border border-gray-150 rounded-xl p-2.5 max-w-xs cursor-pointer shadow-3xs mt-1 text-left">
+                      <span className="text-[10px] font-bold text-gray-500 uppercase ml-1">Acompanhamento:</span>
+                      <select
+                        value={p.status || 'Em Discussão'}
+                        onChange={(e) => {
+                          const nextStatus = e.target.value as 'Em Discussão' | 'Em Andamento' | 'Implementado';
+                          onUpdateProposta({ ...p, status: nextStatus });
+                        }}
+                        className="bg-white border border-gray-250 rounded-lg text-xs font-semibold text-[#1b4332] px-2 py-1 outline-hidden focus:border-[#1b4332] cursor-pointer"
+                      >
+                        <option value="Em Discussão">Em Discussão</option>
+                        <option value="Em Andamento">Em Andamento</option>
+                        <option value="Implementado">Implementado</option>
+                      </select>
                     </div>
 
                   </div>
@@ -742,6 +769,20 @@ export default function MyRestrictedArea({
                     onChange={(e) => setEditedPropostaImpact(e.target.value)}
                     className="w-full px-3 py-2.5 rounded-xl bg-[#f5f7f6] border border-[#e9ecef] text-sm text-gray-850 resize-none leading-relaxed"
                   />
+                </div>
+
+                {/* Status chooser */}
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-500 block uppercase">Status de Progresso da Proposta</label>
+                  <select
+                    value={editedPropostaStatus}
+                    onChange={(e) => setEditedPropostaStatus(e.target.value as any)}
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#f5f7f6] border border-[#e9ecef] text-sm font-semibold text-[#1b4332] cursor-pointer"
+                  >
+                    <option value="Em Discussão">Em Discussão</option>
+                    <option value="Em Andamento">Em Andamento</option>
+                    <option value="Implementado">Implementado</option>
+                  </select>
                 </div>
 
                 {/* Actions button */}

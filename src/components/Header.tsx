@@ -1,8 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Menu, X, ShieldAlert, Award, Code, User, Sun, Moon, 
-  Home as HomeIcon, Map as MapIcon, AlertTriangle, Lightbulb, 
-  LayoutDashboard, Database, Info, Heart, PlayCircle
+import {
+  Menu,
+  X,
+  User,
+  ChevronDown,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Home as HomeIcon,
+  Map as MapIcon,
+  AlertTriangle,
+  Lightbulb,
+  LayoutDashboard,
+  Database,
+  Info,
+  HeartCrack,
+  Play,
+  FileDown,
 } from 'lucide-react';
 import { PlataformaUser } from '../types';
 
@@ -16,322 +30,340 @@ interface HeaderProps {
   onOpenAuth: () => void;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
+  onStartPitchMode: () => void;
+  onExportPitchPdf: () => void;
 }
 
-export default function Header({ 
-  activeSection, 
-  setActiveSection, 
-  showCodeViewer, 
+type NavItem = {
+  id: string;
+  label: string;
+  shortLabel: string;
+  desc: string;
+  icon: React.ElementType;
+  highlight?: 'urgent' | 'idea';
+};
+
+export default function Header({
+  activeSection,
+  setActiveSection,
   setShowCodeViewer,
   currentUser,
   onLogout,
   onOpenAuth,
-  isDarkMode,
-  onToggleDarkMode
+  onStartPitchMode,
+  onExportPitchPdf,
 }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isTourActive, setIsTourActive] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
-
-    // Initial check for onboarding tour
-    if (typeof document !== 'undefined') {
-      setIsTourActive(document.body.classList.contains('tour-active'));
-    }
-
-    // Mutation observer to detect style adjustments and class updates on document body
-    const observer = new MutationObserver(() => {
-      setIsTourActive(document.body.classList.contains('tour-active'));
-    });
-    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      observer.disconnect();
-    };
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const navItems = [
-    { id: 'home', label: 'Início', icon: HomeIcon },
-    { id: 'mapa', label: 'Mapeamento', icon: MapIcon },
-    { id: 'relatar', label: 'Relatar 🚨', icon: AlertTriangle, highlight: 'urgent' },
-    { id: 'propor', label: 'Propor 💡', icon: Lightbulb, highlight: 'idea' },
-    { id: 'dores', label: 'Impactos 💔', icon: Heart },
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'banco', label: 'Soluções', icon: Database },
-    currentUser ? { id: 'restrito', label: 'Área Interna', icon: User } : null,
-    { id: 'pitch', label: 'Vídeo Pitch 🎬', icon: PlayCircle },
-    { id: 'sobre', label: 'Sobre', icon: Info },
-  ].filter(Boolean) as { id: string; label: string; icon: any; highlight?: string }[];
+    { id: 'home', label: 'Início', shortLabel: 'Início', desc: 'Apresentação visual e justificativa', icon: HomeIcon },
+    { id: 'dores', label: 'Impactos no Território', shortLabel: 'Impactos', desc: 'Dados oficiais, casos documentados e impacto humano', icon: HeartCrack },
+    { id: 'mapa', label: 'Mapeamento Territorial', shortLabel: 'Mapa', desc: 'Mapa, galeria e relatos demonstrativos', icon: MapIcon },
+    { id: 'relatar', label: 'Relatar Ocorrência', shortLabel: 'Relatar', desc: 'Registrar poluição, ruído, água, resíduos ou risco territorial', icon: AlertTriangle, highlight: 'urgent' as const },
+    { id: 'propor', label: 'Propor Ação ESG', shortLabel: 'Propor', desc: 'Sugerir soluções plausíveis e sustentáveis', icon: Lightbulb, highlight: 'idea' as const },
+    { id: 'dashboard', label: 'Painel ESG (Indicadores)', shortLabel: 'Indicadores', desc: 'Gráficos, evidências e métricas demonstrativas', icon: LayoutDashboard },
+    { id: 'banco', label: 'Banco de Soluções', shortLabel: 'Soluções', desc: 'Soluções, valor corporativo e calculadora demonstrativa', icon: Database },
+    currentUser ? { id: 'restrito', label: 'Sua Área Interna', shortLabel: 'Área interna', desc: 'Acompanhar propostas e relatos enviados', icon: User } : null,
+    { id: 'sobre', label: 'Sobre o EcoVoz', shortLabel: 'Sobre', desc: 'ODS, propósito e contexto do projeto', icon: Info },
+  ].filter(Boolean) as NavItem[];
+
+  const activeItem = navItems.find((item) => item.id === activeSection) || navItems[0];
+  const ActiveIcon = activeItem.icon;
+  const currentIndex = Math.max(0, navItems.findIndex((item) => item.id === activeSection));
 
   const handleNavClick = (id: string) => {
     setActiveSection(id);
     setIsOpen(false);
+    setDropdownOpen(false);
     setShowCodeViewer(false);
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const isHeaderHidden = scrolled && !isOpen && !isTourActive;
+  const handlePrevSection = () => {
+    const prevIndex = (currentIndex - 1 + navItems.length) % navItems.length;
+    handleNavClick(navItems[prevIndex].id);
+  };
+
+  const handleNextSection = () => {
+    const nextIndex = (currentIndex + 1) % navItems.length;
+    handleNavClick(navItems[nextIndex].id);
+  };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 transform ${
-      isHeaderHidden 
-        ? 'bg-[#1b4332]/98 backdrop-blur-md border-b-2 border-emerald-500 shadow-xl py-1.5 md:py-2 -translate-y-[calc(100%-6px)] hover:translate-y-0 opacity-0 hover:opacity-100 cursor-pointer' 
-        : 'bg-[#1b4332]/90 backdrop-blur-sm py-4 md:py-4.5 border-b border-[#245c44]/40 translate-y-0 opacity-100'
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          {/* Logo & Platform Name */}
-          <div className="flex items-center space-x-2.5 cursor-pointer" onClick={() => handleNavClick('home')}>
-            <div className="bg-gradient-to-br from-[#f28f3b] to-[#e28334] p-2 rounded-xl text-white shadow-md shadow-emerald-950/20">
-              <ShieldAlert className="h-5 w-5 md:h-5.5 md:w-5.5" />
-            </div>
-            <div>
-              <span className="font-sans font-bold text-sm md:text-base text-white tracking-tight leading-none block">
-                Plataforma Socioambiental
-              </span>
-              <span className="font-sans text-[10px] md:text-xs text-[#f28f3b] font-medium tracking-wide">
-                Escuta, Mapeamento &amp; Soluções ESG
-              </span>
-            </div>
-          </div>
- 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-3.5" id="tour-nav-box">
-            {/* Core Nav items arranged in flexible wrapping list */}
-            <nav className="flex flex-wrap items-center gap-1 xl:gap-1.5">
-              {navItems.map((item) => {
-                const IconComp = item.icon;
-                let btnClass = "";
-                if (item.highlight === 'urgent') {
-                  btnClass = activeSection === item.id && !showCodeViewer
-                    ? 'bg-rose-600 text-white font-extrabold border border-rose-500 shadow-md'
-                    : 'bg-rose-500/10 text-rose-200 border border-rose-500/30 hover:bg-rose-600/20 font-bold';
-                } else if (item.highlight === 'idea') {
-                  btnClass = activeSection === item.id && !showCodeViewer
-                    ? 'bg-[#f28f3b] text-slate-950 font-extrabold border border-[#e28334] shadow-md'
-                    : 'bg-[#f28f3b]/10 text-orange-200 border border-[#f28f3b]/30 hover:bg-[#f28f3b]/20 font-bold';
-                } else {
-                  btnClass = activeSection === item.id && !showCodeViewer
-                    ? 'bg-white/10 text-[#f28f3b] border border-white/10 font-bold'
-                    : 'text-gray-200 border border-transparent hover:text-white hover:bg-white/5';
-                }
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleNavClick(item.id)}
-                    className={`w-[102px] xl:w-[124px] h-[36px] px-1 rounded-lg text-[10px] xl:text-[11px] font-bold transition-all duration-200 flex items-center justify-center space-x-1 cursor-pointer shrink-0 ${btnClass}`}
-                  >
-                    {IconComp && <IconComp className={`h-3.5 w-3.5 shrink-0 ${item.highlight === 'urgent' ? 'text-red-400' : item.highlight === 'idea' ? 'text-yellow-400' : 'text-emerald-300'}`} />}
-                    <span className="truncate">{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+    <>
+      {dropdownOpen && (
+        <button
+          type="button"
+          aria-label="Fechar menu de navegação"
+          className="fixed inset-0 z-40 cursor-default bg-black/5"
+          onClick={() => setDropdownOpen(false)}
+        />
+      )}
 
-            {/* System controls */}
-            <div className="flex items-center space-x-1.5 pl-2.5 border-l border-white/15 h-[36px] shrink-0">
-              {/* Academic Area Button */}
+      <header
+        className={`fixed left-0 right-0 top-0 z-50 border-b border-[#245c44]/25 bg-[#1b4332]/95 backdrop-blur-md transition-all duration-300 ${
+          scrolled ? 'py-2 shadow-lg shadow-emerald-950/12' : 'py-3'
+        }`}
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              className="flex shrink-0 items-center rounded-xl border border-[#245c44]/45 bg-[#122e22] px-4 py-2 text-left shadow-sm transition hover:bg-[#183d2d]"
+              onClick={() => handleNavClick('home')}
+              aria-label="Ir para início"
+            >
+              <span className="leading-tight">
+                <span className="block text-lg font-black tracking-tight md:text-xl">
+                  <span className="text-white">Eco</span>
+                  <span className="text-[#a7cba8]">Voz</span>
+                </span>
+                <span className="block text-[10px] font-black tracking-wide text-[#A8CBB1] md:text-[11px]">
+                  Plataforma Socioambiental
+                </span>
+              </span>
+            </button>
+
+            <nav
+              className="hidden min-w-0 flex-1 items-center justify-start gap-2 lg:flex"
+              aria-label="Navegação principal"
+              id="tour-nav-box"
+            >
               <button
-                onClick={() => {
-                  setShowCodeViewer(!showCodeViewer);
-                  setIsOpen(false);
-                  if (!showCodeViewer) {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }
-                }}
-                className={`w-[84px] h-[36px] rounded-lg text-[10px] font-bold uppercase border flex items-center justify-center space-x-1 transition-all duration-300 cursor-pointer ${
-                  showCodeViewer
-                    ? 'bg-sky-500 text-slate-950 border-sky-400 font-bold shadow-md'
-                    : 'bg-[#0b3d59]/30 text-sky-200 border-[#0b3d59]/55 hover:bg-[#0b3d59]/60'
+                type="button"
+                onClick={() => handleNavClick('home')}
+                className={`rounded-xl px-4 py-2 text-sm font-extrabold transition ${
+                  activeSection === 'home'
+                    ? 'bg-[#E8F1EA] text-[#123524]'
+                    : 'text-white/90 hover:bg-white/10 hover:text-white'
                 }`}
               >
-                <Code className="h-3.5 w-3.5" />
-                <span>Código</span>
+                Início
               </button>
 
-              {/* Dark Mode Toggle Button */}
-              <button
-                onClick={onToggleDarkMode}
-                className="w-[36px] h-[36px] rounded-lg text-emerald-100 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-pointer flex items-center justify-center border border-white/5"
-                aria-label={isDarkMode ? "Desativar modo escuro" : "Ativar modo escuro"}
-                title={isDarkMode ? "Alternar para Modo Claro" : "Alternar para Modo Escuro"}
-              >
-                {isDarkMode ? <Sun className="h-4 w-4 text-yellow-400" /> : <Moon className="h-4 w-4 text-sky-200" />}
-              </button>
-
-              {/* Desktop Auth Section */}
-              {currentUser ? (
-                <div className="flex items-center space-x-1.5 pl-1.5 border-l border-white/10 h-[28px] shrink-0">
-                  <span className="text-[10px] font-bold text-emerald-100 uppercase tracking-tight truncate max-w-[65px]" title={currentUser.name}>
-                    {currentUser.name.split(' ')[0]}
+              <div className="relative ml-2">
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  className="flex h-8 w-[146px] items-center justify-between gap-1.5 rounded-lg border border-[#DDE8D8] bg-[#F8FAF7] px-2 text-[12px] font-extrabold text-[#123524] shadow-sm transition hover:border-[#F28C28] hover:bg-white"
+                  aria-haspopup="listbox"
+                  aria-expanded={dropdownOpen}
+                >
+                  <span className="flex min-w-0 items-center gap-1.5 truncate">
+                    <ActiveIcon className="h-3.5 w-3.5 shrink-0 text-[#2F6B4F]" />
+                    <span className="shrink-0 text-[9px] font-black uppercase tracking-wider text-[#2F6B4F]">Canal:</span>
+                    <span className="truncate">{activeItem.shortLabel}</span>
                   </span>
+                  <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-[#F28C28] transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute left-0 z-50 mt-2 max-h-[380px] w-[390px] overflow-y-auto rounded-2xl border border-[#DDE8D8] bg-white py-2 shadow-2xl animate-fade-in">
+                    <div className="border-b border-[#DDE8D8] px-4 pb-2 pt-1">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-[#4B5F55]">Navegação da plataforma</span>
+                    </div>
+                    {navItems.map((item) => {
+                      const IconComp = item.icon;
+                      const isCurrent = activeSection === item.id;
+                      return (
+                        <button
+                          type="button"
+                          key={item.id}
+                          onClick={() => handleNavClick(item.id)}
+                          className={`flex w-full items-start gap-3 px-4 py-3 text-left transition ${
+                            isCurrent
+                              ? 'border-l-4 border-[#F28C28] bg-[#E8F1EA] text-[#123524]'
+                              : 'text-[#4B5F55] hover:bg-[#F8FAF7] hover:text-[#123524]'
+                          }`}
+                        >
+                          <span className={`mt-0.5 rounded-xl p-2 ${item.highlight === 'urgent' ? 'bg-[#FFF3E0] text-[#C44A1C]' : item.highlight === 'idea' ? 'bg-[#FFF8EF] text-[#F28C28]' : 'bg-[#F4F7F2] text-[#2F6B4F]'}`}>
+                            <IconComp className="h-4 w-4" />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex items-center gap-2 text-sm font-black">
+                              <span className="truncate">{item.label}</span>
+                              {isCurrent && <Check className="h-4 w-4 shrink-0 text-[#2F6B4F]" />}
+                            </span>
+                            <span className="mt-0.5 block truncate text-xs font-medium text-[#4B5F55]">{item.desc}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="ml-1 flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={handlePrevSection}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#DDE8D8]/35 bg-white/8 text-[#F28C28] transition hover:bg-white/14 active:scale-95"
+                  title="Aba anterior"
+                  aria-label="Aba anterior"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextSection}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#DDE8D8]/35 bg-white/8 text-[#F28C28] transition hover:bg-white/14 active:scale-95"
+                  title="Próxima aba"
+                  aria-label="Próxima aba"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </nav>
+
+            <div className="ml-auto hidden items-center gap-2 lg:flex">
+              <button
+                type="button"
+                onClick={onStartPitchMode}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#A8CBB1]/45 bg-[#E8F1EA] px-3 py-2 text-xs font-black uppercase tracking-wide text-[#123524] transition hover:bg-white"
+                title="Iniciar modo apresentação"
+              >
+                <Play className="h-3.5 w-3.5" />
+                Pitch
+              </button>
+              <button
+                type="button"
+                onClick={onExportPitchPdf}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#F6C56B]/70 bg-[#FFF8EF] px-3 py-2 text-xs font-black uppercase tracking-wide text-[#C44A1C] transition hover:bg-[#FFF3E0]"
+                title="Exportar relatório PDF"
+              >
+                <FileDown className="h-3.5 w-3.5" />
+                PDF
+              </button>
+              {currentUser ? (
+                <>
                   <button
+                    type="button"
+                    onClick={() => handleNavClick('restrito')}
+                    className="rounded-xl px-3 py-2 text-xs font-black uppercase tracking-wide text-emerald-50 transition hover:bg-white/10"
+                    title={currentUser.name}
+                  >
+                    {currentUser.name.split(' ')[0]}
+                  </button>
+                  <button
+                    type="button"
                     onClick={onLogout}
-                    className="w-[50px] h-[28px] bg-rose-600/90 hover:bg-rose-750 text-white rounded-lg text-[9px] font-extrabold uppercase transition-all cursor-pointer flex items-center justify-center"
+                    className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-black uppercase text-white transition hover:bg-rose-700"
                   >
                     Sair
                   </button>
-                </div>
+                </>
               ) : (
                 <button
+                  type="button"
                   onClick={onOpenAuth}
-                  className="w-[65px] h-[36px] bg-[#f28f3b] hover:bg-[#de7c2a] text-white font-bold rounded-lg text-[10px] uppercase transition-all shadow-sm cursor-pointer flex items-center justify-center"
+                  className="rounded-xl bg-[#F28C28] px-4 py-2 text-xs font-black uppercase text-[#16231C] transition hover:bg-[#de7c2a]"
                 >
                   Entrar
                 </button>
               )}
             </div>
-          </div>
 
-          {/* Mobile Right Controls */}
-          <div className="flex items-center space-x-2 lg:hidden">
-            {/* Dark Mode button on mobile */}
-            <button
-              onClick={onToggleDarkMode}
-              className="p-2.5 rounded-lg bg-white/5 text-emerald-100 hover:text-white transition-colors cursor-pointer"
-              aria-label={isDarkMode ? "Desativar modo escuro" : "Ativar modo escuro"}
-              title={isDarkMode ? "Alternar para Modo Claro" : "Alternar para Modo Escuro"}
-            >
-              {isDarkMode ? <Sun className="h-4.5 w-4.5 text-yellow-400" /> : <Moon className="h-4.5 w-4.5 text-sky-200" />}
-            </button>
-
-            {/* Academic button icon for mobile */}
-            <button
-              onClick={() => {
-                setShowCodeViewer(!showCodeViewer);
-                if (!showCodeViewer) {
-                   window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
-              className={`p-2 rounded-lg transition-colors ${
-                showCodeViewer
-                  ? 'bg-[#f28f3b] text-slate-950'
-                  : 'bg-white/5 text-[#f28f3b] border border-white/10'
-              }`}
-              title="Código Fonte Acadêmico"
-            >
-              <Code className="h-4.5 w-4.5" />
-            </button>
-
-            {/* Mobile Auth Button */}
-            {currentUser ? (
+            <div className="ml-auto flex items-center gap-2 lg:hidden">
               <button
-                onClick={() => handleNavClick('restrito')}
-                className="p-2 rounded-lg bg-emerald-500/10 text-emerald-200 border border-emerald-500/20"
-                title="Sua Área"
+                type="button"
+                onClick={handlePrevSection}
+                className="rounded-xl bg-white/10 p-2 text-[#F28C28] transition hover:bg-white/15 active:scale-95"
+                aria-label="Aba anterior"
               >
-                <User className="h-4.5 w-4.5" />
+                <ChevronLeft className="h-4 w-4" />
               </button>
-            ) : (
               <button
-                onClick={onOpenAuth}
-                className="px-2.5 py-1.5 bg-[#f28f3b] text-white font-bold rounded-lg text-xs cursor-pointer"
-                title="Entrar"
+                type="button"
+                onClick={handleNextSection}
+                className="rounded-xl bg-white/10 p-2 text-[#F28C28] transition hover:bg-white/15 active:scale-95"
+                aria-label="Próxima aba"
               >
-                Entrar
+                <ChevronRight className="h-4 w-4" />
               </button>
-            )}
-
-            <button
-              id="tour-mobile-menu-trigger"
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-lg text-gray-200 hover:text-white hover:bg-white/5 focus:outline-none transition-all duration-200 cursor-pointer"
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+              {currentUser ? (
+                <button
+                  type="button"
+                  onClick={() => handleNavClick('restrito')}
+                  className="rounded-xl border border-emerald-300/20 bg-emerald-500/10 p-2 text-emerald-100"
+                  aria-label="Sua área interna"
+                >
+                  <User className="h-4 w-4" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onOpenAuth}
+                  className="rounded-xl bg-[#F28C28] px-3 py-2 text-xs font-black text-[#16231C]"
+                >
+                  Entrar
+                </button>
+              )}
+              <button
+                type="button"
+                id="tour-mobile-menu-trigger"
+                onClick={() => setIsOpen((prev) => !prev)}
+                className="rounded-xl p-2 text-white/90 transition hover:bg-white/10 hover:text-white"
+                aria-expanded={isOpen}
+                aria-label="Abrir menu de navegação"
+              >
+                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Drawer */}
-      {isOpen && (
-        <div className="lg:hidden bg-[#122e22] border-b border-[#245c44] px-4 pt-2.5 pb-6 space-y-2 shadow-inner transition-transform duration-300">
-          <div className="flex flex-col space-y-1.5">
-            {navItems.map((item) => {
-              const IconComp = item.icon;
-              let itemClass = "";
-              if (item.highlight === 'urgent') {
-                itemClass = activeSection === item.id && !showCodeViewer
-                  ? 'bg-rose-600 text-white font-extrabold'
-                  : 'bg-rose-600/10 text-rose-200 border border-rose-500/20';
-              } else if (item.highlight === 'idea') {
-                itemClass = activeSection === item.id && !showCodeViewer
-                  ? 'bg-[#f28f3b] text-slate-950 font-extrabold'
-                  : 'bg-[#f28f3b]/10 text-orange-200 border border-[#f28f3b]/25';
-              } else {
-                itemClass = activeSection === item.id && !showCodeViewer
-                  ? 'bg-white/10 text-[#f28f3b] border-l-4 border-[#f28f3b] font-bold'
-                  : 'text-gray-200 hover:text-white hover:bg-white/5';
-              }
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavClick(item.id)}
-                  className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2.5 cursor-pointer ${itemClass}`}
-                >
-                  {IconComp && <IconComp className="h-4 w-4 shrink-0 opacity-90" />}
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-            
-            <hr className="border-[#245c44]/60 my-2" />
-            
-            {/* Mobile Auth options in drawer */}
-            {currentUser ? (
-              <div className="py-2 px-4 flex items-center justify-between bg-white/5 rounded-xl border border-white/5">
-                <span className="text-xs text-emerald-100 font-bold truncate">Logado como: {currentUser.name}</span>
-                <button
-                  onClick={() => { onLogout(); setIsOpen(false); }}
-                  className="px-3 py-1 bg-rose-600 hover:bg-rose-750 text-white font-extrabold rounded-lg text-[11px] uppercase tracking-wider cursor-pointer"
-                >
-                  Sair
-                </button>
+        {isOpen && (
+          <div className="border-t border-[#245c44] bg-[#122e22] px-4 pb-6 pt-3 shadow-inner lg:hidden">
+            <div className="mb-2 px-3 text-[10px] font-black uppercase tracking-widest text-[#A8CBB1]">Selecione o canal EcoVoz</div>
+            <div className="space-y-2">
+              {navItems.map((item) => {
+                const IconComp = item.icon;
+                const isCurrent = activeSection === item.id;
+                return (
+                  <button
+                    type="button"
+                    key={item.id}
+                    onClick={() => handleNavClick(item.id)}
+                    className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-bold transition ${
+                      isCurrent ? 'bg-white text-[#123524]' : 'text-emerald-50 hover:bg-white/10'
+                    }`}
+                  >
+                    <IconComp className="h-4 w-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+              <div className="grid grid-cols-2 gap-2 border-t border-white/10 pt-3">
+                <button type="button" onClick={() => { onStartPitchMode(); setIsOpen(false); }} className="rounded-xl bg-white px-3 py-2 text-xs font-black uppercase text-[#123524]">Modo pitch</button>
+                <button type="button" onClick={() => { onExportPitchPdf(); setIsOpen(false); }} className="rounded-xl bg-[#FFF8EF] px-3 py-2 text-xs font-black uppercase text-[#C44A1C]">Exportar PDF</button>
               </div>
-            ) : (
-              <button
-                onClick={() => { onOpenAuth(); setIsOpen(false); }}
-                className="w-full text-center py-2.5 px-4 bg-[#f28f3b] text-white font-bold rounded-lg text-xs tracking-wider uppercase cursor-pointer"
-              >
-                Entrar / Cadastrar Conta
-              </button>
-            )}
-
-            <hr className="border-[#245c44]/60 my-2" />
-
-            <button
-              onClick={() => {
-                setShowCodeViewer(!showCodeViewer);
-                setIsOpen(false);
-                if (!showCodeViewer) {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
-              className={`w-full text-center py-2.5 px-4 rounded-lg text-xs font-bold flex items-center justify-center space-x-2 border transition-all cursor-pointer ${
-                showCodeViewer
-                  ? 'bg-sky-500 text-slate-950 border-sky-400 font-bold'
-                  : 'bg-[#0b3d59]/40 text-sky-200 border-[#0b3d59]/60'
-              }`}
-            >
-              <Code className="h-4 w-4" />
-              <span>Ver Código Fonte Acadêmico (HTML/CSS/JS)</span>
-            </button>
+              <div className="border-t border-white/10 pt-3">
+                {currentUser ? (
+                  <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                    <span className="max-w-[220px] truncate text-xs font-bold text-emerald-50">Conta: {currentUser.name}</span>
+                    <button type="button" onClick={() => { onLogout(); setIsOpen(false); }} className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-black uppercase text-white">
+                      Sair
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => { onOpenAuth(); setIsOpen(false); }} className="w-full rounded-xl bg-[#F28C28] px-4 py-3 text-sm font-black uppercase text-[#16231C]">
+                    Entrar / Criar Conta
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
-    </header>
+        )}
+      </header>
+    </>
   );
 }

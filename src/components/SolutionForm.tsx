@@ -74,7 +74,8 @@ export default function SolutionForm({ onAddProposta }: SolutionFormProps) {
       custo,
       prazo,
       impacto,
-      viabilidade
+      viabilidade,
+      status: 'Em Discussão'
     };
 
     onAddProposta(novaProposta);
